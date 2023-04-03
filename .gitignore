@@ -3,4 +3,5 @@ __pycache__/
 
 /debug.log
 /.env
+/config.py
 /*.code-workspace
