@@ -13,7 +13,7 @@ assert config.BOT_TOKEN != '', 'BOT_TOKEN не указан. Пожалуйст�
 
 
 
-os.makedirs(os.path.dirname(config.LOG_FILEPATH), exist_ok=True)
+os.makedirs(os.path.dirname(os.path.join('.', config.LOG_FILEPATH)), exist_ok=True)
 
 logging.basicConfig(
     level=config.LOG_LEVEL,
