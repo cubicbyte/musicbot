@@ -2,17 +2,24 @@ import os
 import logging
 from discord.ext import commands
 from discord.flags import Intents
-from config import BOT_COMMAND_PREFIX, LOG_LEVEL, LOG_FILEPATH, LOG_FORMAT
+
+try:
+    import config
+except ImportError:
+    raise ImportError('Файл config.py не найден. Пожалуйста, прочтите файл README.md, пункт 1.')
+
+# Проверка наличия всех обязательных параметров
+assert config.BOT_TOKEN != '', 'BOT_TOKEN не указан. Пожалуйста, укажите его в файле config.py'
 
 
 
-os.makedirs(os.path.dirname(LOG_FILEPATH), exist_ok=True)
+os.makedirs(os.path.dirname(config.LOG_FILEPATH), exist_ok=True)
 
 logging.basicConfig(
-    level=LOG_LEVEL,
-    filename=LOG_FILEPATH,
+    level=config.LOG_LEVEL,
+    filename=config.LOG_FILEPATH,
     filemode='a',
-    format=LOG_FORMAT
+    format=config.LOG_FORMAT
 )
 
 _logger = logging.getLogger(__name__)
@@ -22,4 +29,4 @@ _logger.info('Loading settings...')
 
 indents = Intents.default()
 indents.message_content = True
-bot = commands.Bot(command_prefix=BOT_COMMAND_PREFIX, intents=indents)
+bot = commands.Bot(command_prefix=config.BOT_COMMAND_PREFIX, intents=indents)

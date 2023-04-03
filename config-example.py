@@ -17,7 +17,3 @@ FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'executable': 'static_ffmpeg'
 }
-
-
-
-assert BOT_TOKEN != '', 'BOT_TOKEN не указан. Пожалуйста, укажите его в файле config.py'
