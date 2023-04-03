@@ -14,7 +14,6 @@ class AudioQueue(list):
 
         self.guild_id = guild_id
         self.on_replay = False
-        self.current: AudioSource | None = None # TODO убрать current но сделать его @property
 
 
     def get(guild_id: int) -> 'AudioQueue':
@@ -40,42 +39,42 @@ class AudioQueue(list):
             del AudioQueue._global_queue[_guild_id]
 
 
-    def set_current(self, video: AudioSource):
-        "Установить текущую музыку"
+    @property
+    def current(self) -> AudioSource | None:
+        "Текущая музыка"
 
-        if self.on_replay:
-            self.current = video
-        elif len(self) == 0:
-            self.append(video)
+        if len(self) == 0:
+            return None
         else:
-            self[0] = video
+            return self[0]
 
 
-    def get_next(self) -> AudioSource | None:
-        "Вернуть следующую песню из очереди"
-
-        # Если включен режим повтора, то возвращаем текущую песню и не удаляем ее из очереди
-        if not self.on_replay or self.current is None:
-            self.current = self.pop(0) if len(self) != 0 else None
-
-        return self.current
+    @current.setter
+    def current(self, audio: AudioSource):
+        if len(self) == 0:
+            self.append(audio)
+        else:
+            self[0] = audio
 
 
-    def play_next_music(self, bot: Bot, vc: VoiceClient):
+    def play_next_music(self, bot: Bot, vc: VoiceClient, is_after: bool = False):
         "Проиграть следующую песню из очереди"
 
-        next_music = self.get_next()
+        # Удалить текущую музыку перед воспроизведением следующей
+        if is_after:
+            self.pop(0)
 
         # Убрать паузу
         if vc.is_paused():
             vc.resume()
 
-        if next_music is None:
+        # Если очередь пуста, то отмена
+        if self.current is None:
             return
 
         vc.play(
-            FFmpegPCMAudio(next_music.source_url, **FFMPEG_OPTIONS),
-            after=lambda _: self.play_next_music(bot, vc)
+            FFmpegPCMAudio(self.current.source_url, **FFMPEG_OPTIONS),
+            after=lambda _: self.play_next_music(bot, vc, is_after=True)
         )
 
 
@@ -87,7 +86,7 @@ class AudioQueue(list):
             self.on_replay = False
 
         for _ in range(count - 1):
-            self.get_next()
+            self.pop(0)
 
         if vc.is_playing():
             vc.stop()
