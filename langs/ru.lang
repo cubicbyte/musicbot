@@ -1,7 +1,7 @@
 text.empty=Пусто
 
 result.ping=Pong!
-result.queue=**Сейчас воспроизводится**:\n{0}\n\n**Очередь воспроизведения**:\n{1}
+result.queue=**Очередь воспроизведения**:\n{0}
 result.queue.empty=Очередь воспроизведения пуста
 result.video_stopped=Видео остановлено
 result.video_paused=Видео на паузе

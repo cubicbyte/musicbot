@@ -323,10 +323,6 @@ async def queue(ctx: Context):
 
     # Отправить сообщение
     await ctx.send(_lang['result.queue'].format(
-        # Текущее видео
-        queue.current.title,
-
-        # Очередь
         '\n'.join(
             f'{i + 1}. {video.title}' for i, video in enumerate(queue)
         ) or _lang['text.empty']
