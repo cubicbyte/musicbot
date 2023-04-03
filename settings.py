@@ -6,7 +6,7 @@ from config import BOT_COMMAND_PREFIX, LOG_LEVEL, LOG_FILEPATH, LOG_FORMAT
 
 
 
-os.makedirs(os.path.dirname(LOG_FILEPATH), exist_ok=True)
+os.makedirs(os.path.dirname(os.path.join('.', LOG_FILEPATH)), exist_ok=True)
 
 logging.basicConfig(
     level=LOG_LEVEL,
