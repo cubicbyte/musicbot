@@ -1,6 +1,7 @@
 from discord import VoiceClient, FFmpegPCMAudio
 from discord.ext.commands import Bot
 from bot.schemas import AudioSource
+from bot.utils import is_users_in_channel
 from config import FFMPEG_OPTIONS
 
 
@@ -60,8 +61,13 @@ class AudioQueue(list):
     def play_next_music(self, bot: Bot, vc: VoiceClient, is_after: bool = False):
         "Проиграть следующую песню из очереди"
 
-        # Удалить текущую музыку перед воспроизведением следующей
+        # Удалить старую музыку из очереди
+        # А так же ливнуть с канала, если в нём никого не осталось
         if is_after:
+            if not is_users_in_channel(vc.channel):
+                vc.disconnect()
+                self.__del__()
+                return
             self.pop(0)
 
         # Убрать паузу
