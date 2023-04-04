@@ -3,6 +3,7 @@ import urllib.parse
 import urllib.request
 from yt_dlp import YoutubeDL
 from . import is_url
+from config import YDL_OPTIONS
 
 
 def search_youtube(url_or_search: str) -> dict[str, any]:
@@ -12,15 +13,9 @@ def search_youtube(url_or_search: str) -> dict[str, any]:
     :return: Результат `YoutubeDL().extract_info`
     """
 
-    # Добавляем префикс `ytsearch:` если это не ссылка
-    if is_url(url_or_search):
-        url = url_or_search
-    else:
-        url = f"ytsearch:{url_or_search}"
-
     # Получаем информацию о видео
-    with YoutubeDL({'format': 'bestaudio'}) as ydl:
-        ydl_res = ydl.extract_info(url, download=False)
+    with YoutubeDL(YDL_OPTIONS) as ydl:
+        ydl_res = ydl.extract_info(url_or_search, download=False)
 
     return ydl_res
 
