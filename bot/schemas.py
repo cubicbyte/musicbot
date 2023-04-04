@@ -43,7 +43,7 @@ class Language(dict):
 @dataclass
 class SpamState:
     """Состояние спама.
-    
+
     >>> spam = SpamState('@nazar067 зайди в канал', 20, 0.5)
     >>> async for text in spam:
     ...     await ctx.send(text)

@@ -3,6 +3,7 @@ import logging
 from discord.ext import commands
 from discord.flags import Intents
 
+# Проверка наличия файла config.py
 try:
     import config
 except ImportError:
@@ -13,6 +14,7 @@ assert config.BOT_TOKEN != '', 'BOT_TOKEN не указан. Пожалуйст�
 
 
 
+# Создание папки логов
 os.makedirs(os.path.dirname(os.path.join('.', config.LOG_FILEPATH)), exist_ok=True)
 
 logging.basicConfig(
