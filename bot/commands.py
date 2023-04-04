@@ -66,7 +66,7 @@ async def leave(ctx: Context) -> bool:
         return False
 
     await ctx.voice_client.disconnect()
-    AudioQueue.get(ctx.guild.id).__del__()
+    AudioQueue.get(ctx.guild.id).unregister()
     return True
 
 

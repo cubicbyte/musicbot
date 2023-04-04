@@ -100,8 +100,8 @@ class GuildData:
         return True
 
 
-    def __del__(self):
+    def unregister(self):
         _guild_id = str(self.guild_id)
 
-        del GuildData._global_data[_guild_id]
-        del self.__mqueue
+        GuildData._global_data[_guild_id].unregister()
+        self.__mqueue.unregister()

@@ -31,13 +31,13 @@ class AudioQueue(list):
         return queue
 
 
-    def __del__(self):
+    def unregister(self):
         "Удалить очередь из глобального списка для очистки памяти"
 
         _guild_id = str(self.guild_id)
 
         if _guild_id in AudioQueue._global_queue:
-            del AudioQueue._global_queue[_guild_id]
+            AudioQueue._global_queue[_guild_id].unregister()
 
 
     @property
@@ -66,7 +66,7 @@ class AudioQueue(list):
         if is_after:
             if not is_users_in_channel(vc.channel):
                 vc.disconnect()
-                self.__del__()
+                self.unregister()
                 return
             self.pop(0)
 
