@@ -1,7 +1,8 @@
 # Библиотеки
 discord.py==2.2.2
 yt-dlp==2023.3.4
-static-ffmpeg==2.5
 
 # Утилиты
 PyNaCl==1.5.0 # В душе не помню зачем, вроде yt-dlp требовала
+python-dotenv==1.0.0
+static-ffmpeg==2.5

@@ -1,9 +1,9 @@
 # 1. Настройка
 
-Для начала нужно настроить бота через файл `config-example.py`:
+Для начала нужно настроить бота через файл `.env`:
 
-1. Переименуйте файл `config-example.py` в `config.py`
-2. Заполните необходимые поля в файле `config.py`
+1. Переименуйте файл `.env.example` в `.env`
+2. Заполните необходимые поля в файле `.env`
 
 # 2. Установка
 
@@ -35,13 +35,15 @@ pip install -r requirements.txt
 С виртуальным окружением:
 ```bash
 # Windows
-.\venv\Scripts\activate | python main.py
+.\venv\Scripts\activate | python run.py
 
 # Linux
-source venv/bin/activate && python main.py
+source venv/bin/activate && python run.py
 ```
 
 Без виртуального окружения:
 ```bash
-python3 main.py
+python3 run.py
 ```
+
+> **Warning** Если вы не используете venv, то вам необходимо добавить папку "**[python_dir]\Scripts**" в **PATH**

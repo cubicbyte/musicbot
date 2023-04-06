@@ -2,7 +2,7 @@ from discord import VoiceClient, FFmpegPCMAudio
 from discord.ext.commands import Bot
 from bot.schemas import AudioSource
 from bot.utils import is_users_in_channel
-from config import FFMPEG_OPTIONS
+from settings import FFMPEG_OPTIONS
 
 
 
@@ -37,7 +37,7 @@ class AudioQueue(list):
         _guild_id = str(self.guild_id)
 
         if _guild_id in AudioQueue._global_queue:
-            AudioQueue._global_queue[_guild_id].unregister()
+            del AudioQueue._global_queue[_guild_id]
 
 
     @property

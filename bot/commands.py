@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
@@ -7,9 +8,8 @@ from bot.data import GuildData, LanguageManager
 from bot.audio import AudioQueue
 from bot.schemas import YoutubeVideo
 from settings import bot
-from config import DEFAULT_LANG
 
-_lang = LanguageManager.get_lang(DEFAULT_LANG)
+_lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
 
 
 

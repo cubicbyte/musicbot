@@ -1,7 +1,7 @@
+import os
 import logging
 from bot.data import GuildData, LanguageManager, AudioQueue
-from config import BOT_TOKEN, LANGS_DIR
-from settings import bot
+from settings import bot, LANGS_DIR
 from bot.utils import is_users_in_channel, get_bot_channel
 
 logger = logging.getLogger('bot')
@@ -56,4 +56,4 @@ async def on_voice_state_update(member, before, after):
         AudioQueue.get(ch.guild.id).unregister()
 
 
-bot.run(BOT_TOKEN)
+bot.run(os.getenv('BOT_TOKEN'))
