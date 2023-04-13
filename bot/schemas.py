@@ -63,7 +63,7 @@ class SpamState:
         """Асинхронный итератор для спама.
 
         >>> async for _ in spam:
-        ...     # spam здесь - это эта функция
+        ...     # do something
         ...     ...
         """
 

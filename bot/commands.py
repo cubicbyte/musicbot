@@ -2,28 +2,13 @@ import os
 from datetime import datetime
 from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
-from bot import utils
-from bot.utils.youtube import search_youtube
-from bot.data import GuildData, LanguageManager
-from bot.audio import AudioQueue
-from bot.schemas import YoutubeVideo
 from settings import bot
+from . import utils
+from .data import GuildData, LanguageManager
+from .audio import AudioQueue, AudioController
+from .schemas import YoutubeVideo
 
 _lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
-
-
-
-def add_yt_result_to_queue(ydl_res: dict[str, any], queue: AudioQueue):
-    "Добавить видео или плейлист с Youtube в очередь"
-
-    # Если это плейлист, то добавляем все его видео в очередь
-    if ydl_res.get('_type') == 'playlist':
-        for video in ydl_res['entries']:
-            queue.append(YoutubeVideo.from_ydl(video))
-
-    # Если это видео, то добавляем его в очередь
-    else:
-        queue.append(YoutubeVideo.from_ydl(ydl_res))
 
 
 
@@ -66,7 +51,7 @@ async def leave(ctx: Context) -> bool:
         return False
 
     await ctx.voice_client.disconnect()
-    AudioQueue.get(ctx.guild.id).unregister()
+    AudioQueue.get_queue(ctx.guild.id).delete()
     return True
 
 
@@ -88,6 +73,7 @@ async def spam(
         return await ctx.send(_lang['error.args.spam.delay'])
 
     _spam = GuildData.get(ctx.guild.id).create_spam(text, count, delay)
+
     async for _ in _spam:
         await ctx.send(text)
 
@@ -136,20 +122,26 @@ async def play(
         if not await connect(ctx):
             return
 
-    # Убрать паузу
-    if ctx.voice_client.is_paused():
-        ctx.voice_client.resume()
+    # Если вызвано как алиас команды connect
+    if url_or_search is None:
+        return
 
     # Добавить видео в очередь
-    queue = AudioQueue.get(ctx.guild.id)
-    ydl_res = search_youtube(url_or_search)
-    add_yt_result_to_queue(ydl_res, queue)
+    controller = AudioController.get_controller(ctx.voice_client)
+    sources = utils.process_youtube_search(url_or_search)
 
-    # Сразу начать воспроизведение
-    queue.skip(bot, ctx.voice_client)
+    for i, source in enumerate(sources):
+        controller.queue.insert(i, source)
+
+
+    # Пропустить текущее видео
+    if ctx.voice_client.is_playing():
+        controller.skip()
+    else:
+        controller.play()
 
     # Отправить сообщение
-    video = queue.current
+    video = controller.queue._current
     title = '' if utils.is_url(url_or_search) else video.origin_query
     await ctx.send(_lang['result.video_playing'].format(title))
 
@@ -172,18 +164,18 @@ async def add(
     if url_or_search is None:
         return
 
-    # Добавить видео в очередь
-    queue = AudioQueue.get(ctx.guild.id)
-    ydl_res = search_youtube(url_or_search)
-    add_yt_result_to_queue(ydl_res, queue)
+    # Добавить песню в очередь
+    controller = AudioController.get_controller(ctx.voice_client)
+    sources = utils.process_youtube_search(url_or_search)
+    controller.queue.extend(sources)
 
-    # Начать воспроизведение, если очередь была пуста
+    # Пропустить текущее видео
     if not ctx.voice_client.is_playing():
-        queue.play_next_music(bot, ctx.voice_client)
+        controller.play()
 
     # Отправить сообщение
-    # TODO сейчас оно выводит последнее видео очереди. Если это плейлист, то вывести его название
-    video = queue[-1] if len(queue) != 0 else queue.current
+    # TODO сейчас оно выводит название последнего видео очереди. Если это плейлист, то вывести его название
+    video = controller.queue[-1] if len(controller.queue) != 0 else controller.queue._current
     title = '' if utils.is_url(url_or_search) else video.origin_query
     await ctx.send(_lang['result.video_added'].format(title))
 
@@ -201,8 +193,8 @@ async def skip(
         return await ctx.send(_lang['error.not_in_voice_channel'])
 
     # Пропустить песни
-    queue = AudioQueue.get(ctx.guild.id)
-    queue.skip(bot, ctx.voice_client, count)
+    controller = AudioController.get_controller(ctx.voice_client)
+    controller.skip(count)
 
     # Отправить сообщение
     await ctx.send(_lang['result.video_skipped'])
@@ -213,11 +205,11 @@ async def skip(
 async def stop(ctx: Context):
     "Остановить воспроизведение и очистить очередь"
 
-    queue = AudioQueue.get(ctx.guild.id)
-
     # Если бот не в голосовом канале
     if not ctx.voice_client.is_playing():
         return await ctx.send(_lang['error.not_playing'])
+
+    queue = AudioQueue.get_queue(ctx.guild.id)
 
     # Остановить replay
     if queue.on_replay:
@@ -278,7 +270,7 @@ async def replay(
 ):
     "Поставить на повтор"
 
-    queue = AudioQueue.get(ctx.guild.id)
+    queue = AudioQueue.get_queue(ctx.guild.id)
 
     # Подключиться к каналу
     if ctx.voice_client is None:
@@ -296,15 +288,16 @@ async def replay(
             return await ctx.send(_lang['result.replay_enabled'])
 
     # Включить повтор введенной музыки
-    ydl_res = search_youtube(url_or_search)
-    # Ошибка, если это плейлист
-    if ydl_res.get('_type') == 'playlist':
-        return await ctx.send(_lang['error.replay_playlist_not_supported'])
+    controller = AudioController.get_controller(ctx.voice_client)
+    sources = utils.process_youtube_search(url_or_search)
     queue.on_replay = True
-    queue.set_current(YoutubeVideo.from_ydl(ydl_res))
+
+    for i, source in enumerate(sources):
+        queue.insert(i, source)
+
 
     # Сразу начать воспроизведение
-    queue.skip(bot, ctx.voice_client)
+    controller.skip()
 
     # Отправить сообщение
     await ctx.send(_lang['result.replay_enabled'])
@@ -315,15 +308,15 @@ async def replay(
 async def queue(ctx: Context):
     "Показать очередь"
 
-    queue = AudioQueue.get(ctx.guild.id)
+    queue = AudioQueue.get_queue(ctx.guild.id)
 
     # Ошибка, если очередь пуста
-    if len(queue) == 0 and queue.current is None:
+    if len(queue) == 0 and queue._current is None:
         return await ctx.send(_lang['result.queue.empty'])
 
     # Отправить сообщение
     await ctx.send(_lang['result.queue'].format(
         '\n'.join(
-            f'{i + 1}. {video.title}' for i, video in enumerate(queue)
+            f'{i + 1}. {video.title}' for i, video in enumerate(queue.full_queue)
         ) or _lang['text.empty']
     ))

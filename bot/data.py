@@ -1,8 +1,8 @@
 import os
 import time
-from bot.audio import AudioQueue
-from bot.schemas import SpamState, Language
-from bot.utils.lang_loader import load_lang_file
+from .audio import AudioQueue
+from .schemas import SpamState, Language
+from .utils import load_lang_file
 
 
 
@@ -23,7 +23,7 @@ class LanguageManager:
 
     @staticmethod
     def load(path: str):
-        "Загрузить языки из указанной директории."
+        "Загрузить языки из указанной директории"
 
         for file in os.listdir(path):
             lang = load_lang_file(f'{path}/{file}')
@@ -32,14 +32,14 @@ class LanguageManager:
 
     @staticmethod
     def get_lang(lang_code: str) -> Language:
-        "Получить язык по его коду."
+        "Получить язык по его коду"
 
         return LanguageManager._langs.get(lang_code)
 
 
 
 class GuildData:
-    "Данные сервера."
+    "Данные сервера"
 
     _global_data = {}
     "Глобальный словарь данных серверов"
@@ -55,21 +55,18 @@ class GuildData:
         "Текуший спам"
         self.last_move_timestamp: float = 0
         "Время последнего перемещения бота между голосовыми каналами"
-        self.__mqueue: AudioQueue | None = None
 
 
     @property
     def queue(self) -> AudioQueue:
         "Очередь музыки"
 
-        if self.__mqueue is None:
-            self.__mqueue = AudioQueue.get(self.guild_id)
+        return AudioQueue.get(self.guild_id)
 
-        return self.__mqueue
 
 
     def get(guild_id: int) -> 'GuildData':
-        "Получить экземпляр класса GuildData для сервера с указанным ID."
+        "Получить экземпляр класса GuildData для сервера с указанным ID"
 
         _guild_id = str(guild_id)
         gd = GuildData._global_data.get(_guild_id)
@@ -83,14 +80,14 @@ class GuildData:
 
 
     def create_spam(self, message: str, repeats: int, delay: float) -> SpamState:
-        "Зарегистрировать новый экземпляр класса SpamState."
+        "Зарегистрировать новый экземпляр класса `SpamState`"
 
         self.spam = SpamState(message, repeats, delay)
         return self.spam
 
 
     def make_move(self) -> bool:
-        "Зарегистрировать перемещение бота в голосовой канал и вернуть True, если кулдаун прошёл."
+        "Зарегистрировать перемещение бота в голосовой канал и вернуть True, если кулдаун прошёл"
 
         t = time.time()
         if t - self.last_move_timestamp < GuildData.MOVE_CD_S:
@@ -100,8 +97,7 @@ class GuildData:
         return True
 
 
-    def unregister(self):
-        _guild_id = str(self.guild_id)
+    def delete(self):
+        "Удалить данные сервера"
 
-        GuildData._global_data[_guild_id].unregister()
-        self.__mqueue.unregister()
+        self.queue.delete()
