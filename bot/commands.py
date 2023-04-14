@@ -10,7 +10,6 @@ from settings import bot
 from . import utils
 from .data import GuildData, LanguageManager
 from .audio import AudioQueue, AudioController
-from .schemas import YoutubeVideo
 
 _lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
 

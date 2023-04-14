@@ -30,6 +30,10 @@ class LanguageManager:
         "Загрузить языки из указанной директории"
 
         for file in os.listdir(path):
+            # Загружать только файлы .lang
+            if not file.endswith('.lang'):
+                continue
+
             lang = load_lang_file(f'{path}/{file}')
             LanguageManager._langs[lang.lang_code] = lang
 
