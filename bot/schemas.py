@@ -1,3 +1,7 @@
+"""
+Модуль со всеми схемами данных, используемых в боте
+"""
+
 from typing import Optional, Dict
 from asyncio import sleep
 from dataclasses import dataclass

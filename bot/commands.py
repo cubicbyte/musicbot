@@ -1,3 +1,7 @@
+"""
+Модуль с командами бота
+"""
+
 import os
 from datetime import datetime
 from yt_dlp import YoutubeDL

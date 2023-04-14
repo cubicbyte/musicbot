@@ -1,3 +1,7 @@
+"""
+Модуль для работы с музыкой
+"""
+
 from discord import VoiceClient, FFmpegPCMAudio
 from .schemas import AudioSource
 from settings import FFMPEG_OPTIONS
@@ -39,6 +43,7 @@ class AudioQueue(list):
         self.on_replay = False
         "Автоповтор музыки"
         self._current = None
+        "Текущая музыка"
 
 
     @property
@@ -92,7 +97,13 @@ class AudioController:
     """
     Контроллер проигрывания музыки.
 
-    Имеет встроенный цикл проигрывания музыки.
+    Являет собой обёртку над `VoiceClient` для удобного управления воспроизведением.
+
+    Поддерживает следующий функционал:
+
+    - Очередь музыки
+    - Автоповтор музыки
+    - Управление проигрыванием (play, stop, skip)
     """
 
     _controllers = {}
@@ -115,6 +126,7 @@ class AudioController:
     def __init__(self, voice_client: VoiceClient):
         self.voice_client = voice_client
         self._loop_running = False
+        "Флаг для остановки цикла проигрывания музыки"
 
 
     def _play_loop(self, error):
@@ -124,11 +136,13 @@ class AudioController:
         Передаётся в аргумент `after` метода `VoiceClient.play`
         """
 
+        # Флаг для остановки цикла
         if not self._loop_running:
             return
 
         next_audio = self.queue.next()
 
+        # Остановить цикл, если очередь пуста
         if next_audio is None:
             self._loop_running = False
             return

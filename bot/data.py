@@ -1,3 +1,7 @@
+"""
+Модуль для работы с различными данными
+"""
+
 import os
 import time
 from .audio import AudioQueue

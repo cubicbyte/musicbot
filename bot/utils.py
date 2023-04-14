@@ -1,3 +1,7 @@
+"""
+Модуль с различными вспомогательными функциями
+"""
+
 from ast import literal_eval
 from pathlib import Path
 from urllib.parse import urlparse
