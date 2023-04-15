@@ -2,7 +2,6 @@
 Модуль со всеми схемами данных, используемых в боте
 """
 
-from typing import Optional, Dict
 from asyncio import sleep
 from dataclasses import dataclass
 
@@ -17,8 +16,8 @@ class Language(dict):
 
     def __init__(
         self,
-        lang: Optional[Dict[str, str]] = {},
-        lang_code: Optional[str] = None
+        lang: dict[str, str] = {},
+        lang_code: str | None = None
     ) -> None:
         """
         :param lang: Языковой словарь

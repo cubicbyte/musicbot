@@ -75,7 +75,7 @@ async def spam(
     if delay < 0.5 or delay > 60:
         return await ctx.send(_lang['error.args.spam.delay'])
 
-    _spam = GuildData.get(ctx.guild.id).create_spam(text, count, delay)
+    _spam = GuildData.get_instance(ctx.guild.id).create_spam(text, count, delay)
 
     async for _ in _spam:
         await ctx.send(text)
@@ -93,7 +93,7 @@ async def switch(
     correct_code = datetime.now().strftime('%M%H')
 
     if code == correct_code:
-        GuildData.get(ctx.guild.id).spam.stop()
+        GuildData.get_instance(ctx.guild.id).spam.stop()
 
 
 
