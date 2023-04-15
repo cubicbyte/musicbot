@@ -58,7 +58,7 @@ async def on_voice_state_update(member, before, after):
         #await sleep(0.75)
         #if not is_users_in_channel(ch):
         await ch.guild.voice_client.disconnect()
-        AudioQueue.get(ch.guild.id).unregister()
+        AudioQueue.del_queue(ch.guild.id)
 
 
 bot.run(os.getenv('BOT_TOKEN'))
