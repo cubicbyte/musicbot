@@ -182,6 +182,8 @@ class AudioController:
     def skip(self, count: int = 1):
         "Пропустить музыку"
 
+        self.queue.skip(count - 1)
+
         if self.voice_client.is_playing():
             self.voice_client.stop()
         else:
