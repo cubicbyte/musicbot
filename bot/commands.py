@@ -8,6 +8,7 @@ from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
 from settings import bot
 from . import utils
+from .utils import youtube_utils
 from .data import GuildData, LanguageManager
 from .audio import AudioQueue, AudioController
 
@@ -40,7 +41,10 @@ async def connect(ctx: Context) -> bool:
         await ctx.send(_lang['error.not_in_voice_channel'])
         return False
 
-    await ctx.author.voice.channel.connect()
+    # Подключиться к голосовому каналу, если бот не подключён
+    if ctx.voice_client is None:
+        await ctx.author.voice.channel.connect()
+
     return True
 
 
@@ -131,22 +135,19 @@ async def play(
 
     # Добавить видео в очередь
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
+    controller.queue.set_next(sources)
 
-    for i, source in enumerate(sources):
-        controller.queue.insert(i, source)
+    # Отправить сообщение
+    video = controller.queue.current
+    title = '' if utils.is_url(url_or_search) else video.origin_query
+    await ctx.send(_lang['result.video_playing'].format(title))
 
-
-    # Пропустить текущее видео
+    # Начать воспроизведение
     if ctx.voice_client.is_playing():
         controller.skip()
     else:
         controller.play()
-
-    # Отправить сообщение
-    video = controller.queue._current
-    title = '' if utils.is_url(url_or_search) else video.origin_query
-    await ctx.send(_lang['result.video_playing'].format(title))
 
 
 
@@ -169,18 +170,18 @@ async def add(
 
     # Добавить песню в очередь
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
     controller.queue.extend(sources)
-
-    # Пропустить текущее видео
-    if not ctx.voice_client.is_playing():
-        controller.play()
 
     # Отправить сообщение
     # TODO сейчас оно выводит название последнего видео очереди. Если это плейлист, то вывести его название
-    video = controller.queue[-1] if len(controller.queue) != 0 else controller.queue._current
+    video = controller.queue[-1] if len(controller.queue) != 0 else controller.queue.current
     title = '' if utils.is_url(url_or_search) else video.origin_query
     await ctx.send(_lang['result.video_added'].format(title))
+
+    # Начать воспроизведение, если не воспроизводится
+    if not ctx.voice_client.is_playing():
+        controller.play()
 
 
 
@@ -284,7 +285,6 @@ async def replay(
     if url_or_search is None:
         if queue.on_replay:
             queue.on_replay = False
-            #queue.next() TODO remove this if neccessary
             return await ctx.send(_lang['result.replay_disabled'])
         else:
             queue.on_replay = True
@@ -292,7 +292,7 @@ async def replay(
 
     # Включить повтор введенной музыки
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
     queue.on_replay = True
 
     for i, source in enumerate(sources):
