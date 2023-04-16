@@ -100,6 +100,8 @@ class YoutubeVideo(AudioSource):
 
     origin_query: str
     "Оригинальный запрос поиска"
+    id: str
+    "ID видео (`https://www.youtube.com/watch?v= > tPEE9ZwTmy0 <`)"
     title: str
     "Название видео"
     author: str
@@ -120,7 +122,8 @@ class YoutubeVideo(AudioSource):
 
         return YoutubeVideo(
             source_url=vid_info.get('url'),
-            origin_query=vid_info.get('webpage_url'),
+            origin_query=vid_info.get('original_url'),
+            id=vid_info.get('id'),
             title=vid_info.get('title'),
             author=vid_info.get('uploader'),
             description=vid_info.get('description'),
@@ -128,3 +131,8 @@ class YoutubeVideo(AudioSource):
             duration_str=vid_info.get('duration_str'),
             thumbnail=vid_info.get('thumbnail'),
         )
+    
+    @property
+    def url(self) -> str:
+        "Ссылка на видео"
+        return f'https://www.youtube.com/watch?v={self.id}'

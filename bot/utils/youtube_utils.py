@@ -21,6 +21,7 @@ def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
 
     if ydl_res.get('_type') == 'playlist':
         for video in ydl_res['entries']:
+            video['original_url'] = ydl_res.get('original_url')
             res.append(YoutubeVideo.from_ydl(video))
     else:
         res.append(YoutubeVideo.from_ydl(ydl_res))

@@ -101,7 +101,7 @@ async def switch(
 
 
 
-@bot.command('getlink', aliases=['link'])
+@bot.command('getlink', aliases=['geturl', 'link'])
 async def getlink(
     ctx: Context,
     url: str = parameter(description='Ссылка на видео или поисковый запрос'),
