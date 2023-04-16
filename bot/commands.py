@@ -139,9 +139,10 @@ async def play(
     controller.queue.set_next(sources)
 
     # Отправить сообщение
-    video = controller.queue.current
-    title = '' if utils.is_url(url_or_search) else video.origin_query
-    await ctx.send(_lang['result.video_playing'].format(title))
+    if len(controller.queue) != 0:
+        video = controller.queue[0]
+        title = '' if utils.is_url(video.origin_query) else video.url
+        await ctx.send(_lang['result.video_playing'].format(title))
 
     # Начать воспроизведение
     if ctx.voice_client.is_playing():
@@ -175,9 +176,10 @@ async def add(
 
     # Отправить сообщение
     # TODO сейчас оно выводит название последнего видео очереди. Если это плейлист, то вывести его название
-    video = controller.queue[-1] if len(controller.queue) != 0 else controller.queue.current
-    title = '' if utils.is_url(url_or_search) else video.origin_query
-    await ctx.send(_lang['result.video_added'].format(title))
+    if len(controller.queue) != 0:
+        video = controller.queue[0]
+        title = '' if utils.is_url(video.origin_query) else video.url
+        await ctx.send(_lang['result.video_added'].format(title))
 
     # Начать воспроизведение, если не воспроизводится
     if not ctx.voice_client.is_playing():
