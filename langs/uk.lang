@@ -13,6 +13,9 @@ result.replay_enabled=Автопрогравання увімкнено
 result.replay_disabled=Автопрогравання вимкнено
 result.queue_cleared=Черга програвання очищена: -{0} пісень
 result.playing_last=Програвання останнього відео
+result.language_help=Мова бота: {0}\n\nДоступні мови:\n**uk** - Українська\n**ru** - Російська
+result.languages=Доступні мови:\n**uk** - Українська\n**ru** - Російська
+result.language_set=Мова бота змінена
 
 error.args.spam=Невірне використання команди.\n\nПриклад: `$spam <кількість> <затримка> <текст>`\n\n`<кількість>` - ціле чисто від `1` до `100`\n`<затримка>` - число від `0.5` до `60` секунд
 error.args.spam.count=Кількість повинна бути від 1 до 100
@@ -26,3 +29,4 @@ error.already_stopped=Музика вже зупинена
 error.queue_empty=У черзі немає музики
 error.replay_playlist_not_supported=Автопрогравання не підтримується для плейлістів
 error.no_last_video=Останнє відео не знайдене
+error.language_not_found=Мова не знайдена

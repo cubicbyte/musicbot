@@ -379,3 +379,35 @@ async def playlast(ctx: Context):
 
     # Отправить сообщение
     await ctx.send(_lang['result.playing_last'])
+
+
+
+@bot.command('language', aliases=['lang'])
+async def language(
+    ctx: Context,
+    lang: str = parameter(default=None, description='Язык')
+):
+    "Установить язык бота"
+
+    # Отобразить помощь, если язык не указан
+    if lang is None:
+        return await ctx.send(_lang['result.language_help'].format(...)) # TODO: bot lang
+
+    # Ошибка, если язык не найден
+    if lang not in LanguageManager._langs:
+        return await ctx.send(_lang['error.language_not_found'])
+
+    # Установить язык
+    gd = GuildData.get_instance(ctx.guild.id)
+    #gd.lang = lang # TODO
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.language_set'])
+
+
+
+@bot.command('languages', aliases=['langs'])
+async def languages(ctx: Context):
+    "Показать список доступных языков"
+
+    await ctx.send(_lang['result.languages'])
