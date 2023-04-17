@@ -44,6 +44,8 @@ class AudioQueue(list):
         "Автоповтор музыки"
         self._current: AudioSource | None = None
         "Текущая музыка"
+        self._latest: AudioSource | None = None
+        "Последняя проигранная музыка"
 
 
     @property
@@ -88,6 +90,12 @@ class AudioQueue(list):
 
 
     @property
+    def latest(self) -> AudioSource | None:
+        "Последняя проигранная музыка"
+        return self._latest
+
+
+    @property
     def current(self) -> AudioSource | None:
         "Текущая музыка"
         return self._current
@@ -95,6 +103,7 @@ class AudioQueue(list):
 
     @current.setter
     def current(self, value: AudioSource | None):
+        self._latest = self.current or self._latest or value
         self._current = value
 
 

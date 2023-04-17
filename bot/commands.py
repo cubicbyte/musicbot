@@ -325,3 +325,23 @@ async def queue(ctx: Context):
             f'{i + 1}. {video.title}' for i, video in enumerate(queue.full_queue)
         ) or _lang['text.empty']
     ))
+
+
+
+@bot.command('playlast', aliases=['last', 'latest'])
+async def playlast(ctx: Context):
+    "Воспроизвести последнюю музыку"
+
+    controller = AudioController.get_controller(ctx.voice_client)
+
+    # Ошибка, если последняя музыка не найдена
+    if controller.queue.latest is None:
+        return await ctx.send(_lang['error.no_last_video'])
+
+    controller.queue.set_next(controller.queue.latest)
+
+    # Воспроизвести последнюю музыку
+    controller.skip()
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.playing_last'])
