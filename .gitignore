@@ -1,7 +1,10 @@
-__pycache__/
+# User files
 /venv/
-
-/debug.log
 /.env
 /config.py
 /*.code-workspace
+
+# Generated files
+*.sqlite
+*.log
+__pycache__/

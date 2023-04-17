@@ -1,3 +1,7 @@
+"""
+Модуль для работы с YouTube
+"""
+
 from yt_dlp import YoutubeDL
 from settings import YDL_OPTIONS
 from ..schemas import YoutubeVideo

@@ -2,17 +2,14 @@
 Модуль с командами бота
 """
 
-import os
 from datetime import datetime
 from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
 from settings import bot
 from . import utils
 from .utils import youtube_utils
-from .data import GuildData, LanguageManager
+from .data import GuildData, langs
 from .audio import AudioQueue, AudioController
-
-_lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
 
 
 
@@ -40,9 +37,11 @@ async def echo(
 async def connect(ctx: Context) -> bool:
     "Подключиться к голосовому каналу"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Выдать ошибку, если пользователь не в голосовом канале
     if ctx.author.voice is None:
-        await ctx.send(_lang['error.not_in_voice_channel'])
+        await ctx.send(guild.lang['error.not_in_voice_channel'])
         return False
 
     # Подключиться к голосовому каналу, если бот не подключён
@@ -77,11 +76,13 @@ async def spam(
 ):
     "Спамить текстом"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Валидация аргументов
     if count < 1 or count > 100:
-        return await ctx.send(_lang['error.args.spam.count'])
+        return await ctx.send(guild.lang['error.args.spam.count'])
     if delay < 0.5 or delay > 60:
-        return await ctx.send(_lang['error.args.spam.delay'])
+        return await ctx.send(guild.lang['error.args.spam.delay'])
 
     _spam = GuildData.get_instance(ctx.guild.id).create_spam(text, count, delay)
 
@@ -98,12 +99,13 @@ async def stopspam(
 ):
     "Остановить спам"
 
+    guild = GuildData.get_instance(ctx.guild.id)
     correct_code = datetime.now().strftime('%M%H')
 
     if code == correct_code:
         GuildData.get_instance(ctx.guild.id).spam.stop()
     else:
-        await ctx.send(_lang['error.args.stopspam.code'])
+        await ctx.send(guild.lang['error.args.stopspam.code'])
 
 
 
@@ -139,8 +141,10 @@ async def play(
     if url_or_search is None:
         return
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Отправить сообщение
-    await ctx.send(_lang['result.searching'])
+    await ctx.send(guild.lang['result.searching'])
 
     # Добавить видео в очередь
     controller = AudioController.get_controller(ctx.voice_client)
@@ -151,7 +155,7 @@ async def play(
     if len(controller.queue) != 0:
         video = controller.queue[0]
         title = '' if utils.is_url(video.origin_query) else video.url
-        await ctx.send(_lang['result.video_playing'].format(title))
+        await ctx.send(guild.lang['result.video_playing'].format(title))
 
     # Начать воспроизведение
     if ctx.voice_client.is_playing():
@@ -178,8 +182,10 @@ async def add(
     if url_or_search is None:
         return
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Отправить сообщение
-    await ctx.send(_lang['result.searching'])
+    await ctx.send(guild.lang['result.searching'])
 
     # Добавить песню в очередь
     controller = AudioController.get_controller(ctx.voice_client)
@@ -191,7 +197,7 @@ async def add(
     if len(controller.queue) != 0:
         video = controller.queue[0]
         title = '' if utils.is_url(video.origin_query) else video.url
-        await ctx.send(_lang['result.video_added'].format(title))
+        await ctx.send(guild.lang['result.video_added'].format(title))
 
     # Начать воспроизведение, если не воспроизводится
     if not ctx.voice_client.is_playing():
@@ -206,16 +212,18 @@ async def skip(
 ):
     "Пропустить текущую песню"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Ошибка, если бот не в голосовом канале
     if ctx.voice_client is None:
-        return await ctx.send(_lang['error.not_in_voice_channel'])
+        return await ctx.send(guild.lang['error.not_in_voice_channel'])
 
     # Пропустить песни
     controller = AudioController.get_controller(ctx.voice_client)
     controller.skip(count)
 
     # Отправить сообщение
-    await ctx.send(_lang['result.video_skipped'])
+    await ctx.send(guild.lang['result.video_skipped'])
 
 
 
@@ -223,9 +231,11 @@ async def skip(
 async def stop(ctx: Context):
     "Остановить воспроизведение и очистить очередь"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Если бот не в голосовом канале
     if not ctx.voice_client.is_playing():
-        return await ctx.send(_lang['error.not_playing'])
+        return await ctx.send(guild.lang['error.not_playing'])
 
     queue = AudioQueue.get_queue(ctx.guild.id)
 
@@ -238,7 +248,7 @@ async def stop(ctx: Context):
     ctx.voice_client.stop()
 
     # Отправить сообщение
-    await ctx.send(_lang['result.video_stopped'])
+    await ctx.send(guild.lang['result.video_stopped'])
 
 
 
@@ -246,18 +256,20 @@ async def stop(ctx: Context):
 async def pause(ctx: Context):
     "Поставить на паузу"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Ошибка, если бот не в голосовом канале
     if ctx.voice_client is None:
-        return await ctx.send(_lang['error.not_in_voice_channel'])
+        return await ctx.send(guild.lang['error.not_in_voice_channel'])
     # Ошибка, если бот и так на паузе
     if ctx.voice_client.is_paused():
-        return await ctx.send(_lang['error.already_paused'])
+        return await ctx.send(guild.lang['error.already_paused'])
     # Ошибка, если воспроизведение остановлено
     if not ctx.voice_client.is_playing():
-        return await ctx.send(_lang['error.already_stopped'])
+        return await ctx.send(guild.lang['error.already_stopped'])
 
     ctx.voice_client.pause()
-    await ctx.send(_lang['result.video_paused'])
+    await ctx.send(guild.lang['result.video_paused'])
 
 
 
@@ -265,18 +277,20 @@ async def pause(ctx: Context):
 async def resume(ctx: Context):
     "Продолжить воспроизведение"
 
+    guild = GuildData.get_instance(ctx.guild.id)
+
     # Ошибка, если бот не в голосовом канале
     if ctx.voice_client is None:
-        return await ctx.send(_lang['error.not_in_voice_channel'])
+        return await ctx.send(guild.lang['error.not_in_voice_channel'])
     # Ошибка, если бот и так играет музыку
     if ctx.voice_client.is_playing():
-        return await ctx.send(_lang['error.already_playing'])
+        return await ctx.send(guild.lang['error.already_playing'])
     # Ошибка, если бот не на паузе
     if not ctx.voice_client.is_paused():
-        return await ctx.send(_lang['error.queue_empty'])
+        return await ctx.send(guild.lang['error.queue_empty'])
 
     ctx.voice_client.resume()
-    await ctx.send(_lang['result.video_resumed'])
+    await ctx.send(guild.lang['result.video_resumed'])
 
 
 
@@ -288,7 +302,7 @@ async def replay(
 ):
     "Поставить на повтор"
 
-    queue = AudioQueue.get_queue(ctx.guild.id)
+    guild = GuildData.get_instance(ctx.guild.id)
 
     # Подключиться к каналу
     if ctx.voice_client is None:
@@ -297,31 +311,28 @@ async def replay(
 
     # Если команда вызвана без параметров, то просто включить/выключить повтор текущей музыки
     if url_or_search is None:
-        if queue.on_replay:
-            queue.on_replay = False
-            await ctx.send(_lang['result.replay_disabled'])
+        if guild.queue.on_replay:
+            guild.queue.on_replay = False
+            await ctx.send(guild.lang['result.replay_disabled'])
         else:
-            queue.on_replay = True
-            await ctx.send(_lang['result.replay_enabled'])
+            guild.queue.on_replay = True
+            await ctx.send(guild.lang['result.replay_enabled'])
         return
 
     # Отправить сообщение
-    await ctx.send(_lang['result.searching'])
+    await ctx.send(guild.lang['result.searching'])
 
     # Включить повтор введенной музыки
     controller = AudioController.get_controller(ctx.voice_client)
     sources = youtube_utils.process_youtube_search(url_or_search)
-    queue.on_replay = True
-
-    for i, source in enumerate(sources):
-        queue.insert(i, source)
-
+    guild.queue.on_replay = True
+    guild.queue.set_next(sources)
 
     # Сразу начать воспроизведение
     controller.skip()
 
     # Отправить сообщение
-    await ctx.send(_lang['result.replay_enabled'])
+    await ctx.send(guild.lang['result.replay_enabled'])
 
 
 
@@ -329,17 +340,17 @@ async def replay(
 async def queue(ctx: Context):
     "Показать очередь"
 
-    queue = AudioQueue.get_queue(ctx.guild.id)
+    guild = GuildData.get_instance(ctx.guild.id)
 
     # Ошибка, если очередь пуста
-    if len(queue) == 0 and queue._current is None:
-        return await ctx.send(_lang['result.queue.empty'])
+    if len(guild.queue) == 0 and guild.queue._current is None:
+        return await ctx.send(guild.lang['result.queue.empty'])
 
     # Отправить сообщение
-    await ctx.send(_lang['result.queue'].format(
+    await ctx.send(guild.lang['result.queue'].format(
         '\n'.join(
-            f'{i + 1}. {video.title}' for i, video in enumerate(queue.full_queue)
-        ) or _lang['text.empty']
+            f'{i + 1}. {video.title}' for i, video in enumerate(guild.queue.full_queue)
+        ) or guild.lang['text.empty']
     ))
 
 
@@ -348,17 +359,17 @@ async def queue(ctx: Context):
 async def clear(ctx: Context):
     "Очистить очередь, не останавливая воспроизведение текущей музыки"
 
-    queue = AudioQueue.get_queue(ctx.guild.id)
-    queue_len = len(queue)
+    guild = GuildData.get_instance(ctx.guild.id)
+    queue_len = len(guild.queue)
 
     # Ошибка, если очередь пуста
     if queue_len == 0:
-        return await ctx.send(_lang['error.queue_empty'])
+        return await ctx.send(guild.lang['error.queue_empty'])
 
     queue.clear()
 
     # Отправить сообщение
-    await ctx.send(_lang['result.queue_cleared'].format(queue_len))
+    await ctx.send(guild.lang['result.queue_cleared'].format(queue_len))
 
 
 
@@ -366,11 +377,12 @@ async def clear(ctx: Context):
 async def playlast(ctx: Context):
     "Воспроизвести последнюю музыку"
 
+    guild = GuildData.get_instance(ctx.guild.id)
     controller = AudioController.get_controller(ctx.voice_client)
 
     # Ошибка, если последняя музыка не найдена
     if controller.queue.latest is None:
-        return await ctx.send(_lang['error.no_last_video'])
+        return await ctx.send(guild.lang['error.no_last_video'])
 
     controller.queue.set_next(controller.queue.latest)
 
@@ -378,4 +390,37 @@ async def playlast(ctx: Context):
     controller.skip()
 
     # Отправить сообщение
-    await ctx.send(_lang['result.playing_last'])
+    await ctx.send(guild.lang['result.playing_last'])
+
+
+
+@bot.command('language', aliases=['lang'])
+async def language(
+    ctx: Context,
+    lang_code: str = parameter(default=None, description='Язык')
+):
+    "Установить язык бота"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+
+    # Отобразить помощь, если язык не указан
+    if lang_code is None:
+        return await ctx.send(guild.lang['result.language_help'].format(guild.lang_code))
+
+    # Ошибка, если язык не найден
+    if lang_code not in langs:
+        return await ctx.send(guild.lang['error.language_not_found'])
+
+    guild.lang_code = lang_code
+
+    # Отправить сообщение
+    await ctx.send(guild.lang['result.language_set'])
+
+
+
+@bot.command('languages', aliases=['langs'])
+async def languages(ctx: Context):
+    "Показать список доступных языков"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+    await ctx.send(guild.lang['result.languages'])

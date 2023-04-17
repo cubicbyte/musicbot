@@ -1,9 +1,9 @@
-import os
-from discord import VoiceState, VoiceChannel, VoiceClient, User
-from discord.ext.commands import Bot, Context
-from ..data import LanguageManager
+"""
+Модуль для работы с Discord API
+"""
 
-_lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
+from discord import VoiceState, VoiceChannel, VoiceClient, User
+from discord.ext.commands import Bot
 
 
 
