@@ -2,10 +2,8 @@
 Модуль с различными вспомогательными функциями
 """
 
-import asyncio
 from ast import literal_eval
 from pathlib import Path
-from functools import wraps, partial
 from urllib.parse import urlparse
 from ..schemas import Language
 
