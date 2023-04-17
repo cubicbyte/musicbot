@@ -139,6 +139,9 @@ async def play(
     if url_or_search is None:
         return
 
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
+
     # Добавить видео в очередь
     controller = AudioController.get_controller(ctx.voice_client)
     sources = youtube_utils.process_youtube_search(url_or_search)
@@ -174,6 +177,9 @@ async def add(
     # Если вызвано как алиас команды connect
     if url_or_search is None:
         return
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
 
     # Добавить песню в очередь
     controller = AudioController.get_controller(ctx.voice_client)
@@ -293,10 +299,14 @@ async def replay(
     if url_or_search is None:
         if queue.on_replay:
             queue.on_replay = False
-            return await ctx.send(_lang['result.replay_disabled'])
+            await ctx.send(_lang['result.replay_disabled'])
         else:
             queue.on_replay = True
-            return await ctx.send(_lang['result.replay_enabled'])
+            await ctx.send(_lang['result.replay_enabled'])
+        return
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
 
     # Включить повтор введенной музыки
     controller = AudioController.get_controller(ctx.voice_client)

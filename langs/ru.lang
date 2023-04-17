@@ -1,5 +1,6 @@
 text.empty=Пусто
 
+result.searching=Поиск...
 result.queue=**Очередь воспроизведения**:\n{0}
 result.queue.empty=Очередь воспроизведения пуста
 result.video_stopped=Видео остановлено
