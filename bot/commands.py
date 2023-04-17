@@ -8,6 +8,7 @@ from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
 from settings import bot
 from . import utils
+from .utils import youtube_utils
 from .data import GuildData, LanguageManager
 from .audio import AudioQueue, AudioController
 
@@ -19,12 +20,16 @@ _lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
 async def ping(ctx: Context):
     "Проверить работоспособность бота"
 
-    await ctx.send(_lang['result.ping'])
+    await ctx.send('Pong!')
 
 
 
-@bot.command('echo', aliases=['say'])
-async def echo(ctx, *, message: str):
+@bot.command('echo', aliases=['say', 'bot'])
+async def echo(
+    ctx,
+    *,
+    message: str = parameter(description='Сообщение')
+):
     "Отправить сообщение от лица бота"
 
     await ctx.send(message)
@@ -40,7 +45,10 @@ async def connect(ctx: Context) -> bool:
         await ctx.send(_lang['error.not_in_voice_channel'])
         return False
 
-    await ctx.author.voice.channel.connect()
+    # Подключиться к голосовому каналу, если бот не подключён
+    if ctx.voice_client is None:
+        await ctx.author.voice.channel.connect()
+
     return True
 
 
@@ -59,7 +67,7 @@ async def leave(ctx: Context) -> bool:
 
 
 
-@bot.command()
+@bot.command('spam', aliases=['flood'])
 async def spam(
     ctx: Context,
     count: int = parameter(description='Количество повторов'),
@@ -82,8 +90,8 @@ async def spam(
 
 
 
-@bot.command()
-async def switch(
+@bot.command('stopspam', aliases=['switch'])
+async def stopspam(
     ctx: Context,
     *,
     code: str = parameter(description='Код для остановки спама. Только жильцы самих недр владеют этим знанием.')
@@ -94,13 +102,15 @@ async def switch(
 
     if code == correct_code:
         GuildData.get_instance(ctx.guild.id).spam.stop()
+    else:
+        await ctx.send(_lang['error.args.stopspam.code'])
 
 
 
-@bot.command('getlink', aliases=['link'])
+@bot.command('getlink', aliases=['geturl', 'link'])
 async def getlink(
     ctx: Context,
-    url: str = parameter(description='Ссылка на видео или поисковый запрос'),
+    url: str = parameter(description='Ссылка на видео'),
     result_type: str = parameter(default='video', description='Тип результата (video, audio)')
 ):
     "Получить прямую ссылку на видео/аудио"
@@ -129,28 +139,29 @@ async def play(
     if url_or_search is None:
         return
 
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
+
     # Добавить видео в очередь
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
+    controller.queue.set_next(sources)
 
-    for i, source in enumerate(sources):
-        controller.queue.insert(i, source)
+    # Отправить сообщение
+    if len(controller.queue) != 0:
+        video = controller.queue[0]
+        title = '' if utils.is_url(video.origin_query) else video.url
+        await ctx.send(_lang['result.video_playing'].format(title))
 
-
-    # Пропустить текущее видео
+    # Начать воспроизведение
     if ctx.voice_client.is_playing():
         controller.skip()
     else:
         controller.play()
 
-    # Отправить сообщение
-    video = controller.queue._current
-    title = '' if utils.is_url(url_or_search) else video.origin_query
-    await ctx.send(_lang['result.video_playing'].format(title))
 
 
-
-@bot.command('add', aliases=['a'])
+@bot.command('add', aliases=['a', '+'])
 async def add(
     ctx: Context,
     *,
@@ -167,24 +178,28 @@ async def add(
     if url_or_search is None:
         return
 
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
+
     # Добавить песню в очередь
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
     controller.queue.extend(sources)
-
-    # Пропустить текущее видео
-    if not ctx.voice_client.is_playing():
-        controller.play()
 
     # Отправить сообщение
     # TODO сейчас оно выводит название последнего видео очереди. Если это плейлист, то вывести его название
-    video = controller.queue[-1] if len(controller.queue) != 0 else controller.queue._current
-    title = '' if utils.is_url(url_or_search) else video.origin_query
-    await ctx.send(_lang['result.video_added'].format(title))
+    if len(controller.queue) != 0:
+        video = controller.queue[0]
+        title = '' if utils.is_url(video.origin_query) else video.url
+        await ctx.send(_lang['result.video_added'].format(title))
+
+    # Начать воспроизведение, если не воспроизводится
+    if not ctx.voice_client.is_playing():
+        controller.play()
 
 
 
-@bot.command('skip', aliases=['next'])
+@bot.command('skip', aliases=['next', 'nx', 'sk'])
 async def skip(
     ctx: Context,
     count: int = parameter(default=1, description='Количество песен для пропуска')
@@ -246,7 +261,7 @@ async def pause(ctx: Context):
 
 
 
-@bot.command()
+@bot.command('resume', aliases=['continue', 'unpause', 'res'])
 async def resume(ctx: Context):
     "Продолжить воспроизведение"
 
@@ -265,7 +280,7 @@ async def resume(ctx: Context):
 
 
 
-@bot.command()
+@bot.command('replay', aliases=['repeat', 'loop', 'repl', 'rep', 'rp'])
 async def replay(
     ctx: Context,
     *,
@@ -284,15 +299,18 @@ async def replay(
     if url_or_search is None:
         if queue.on_replay:
             queue.on_replay = False
-            #queue.next() TODO remove this if neccessary
-            return await ctx.send(_lang['result.replay_disabled'])
+            await ctx.send(_lang['result.replay_disabled'])
         else:
             queue.on_replay = True
-            return await ctx.send(_lang['result.replay_enabled'])
+            await ctx.send(_lang['result.replay_enabled'])
+        return
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.searching'])
 
     # Включить повтор введенной музыки
     controller = AudioController.get_controller(ctx.voice_client)
-    sources = utils.process_youtube_search(url_or_search)
+    sources = youtube_utils.process_youtube_search(url_or_search)
     queue.on_replay = True
 
     for i, source in enumerate(sources):
@@ -307,7 +325,7 @@ async def replay(
 
 
 
-@bot.command()
+@bot.command('queue', aliases=['list'])
 async def queue(ctx: Context):
     "Показать очередь"
 
@@ -323,3 +341,41 @@ async def queue(ctx: Context):
             f'{i + 1}. {video.title}' for i, video in enumerate(queue.full_queue)
         ) or _lang['text.empty']
     ))
+
+
+
+@bot.command()
+async def clear(ctx: Context):
+    "Очистить очередь, не останавливая воспроизведение текущей музыки"
+
+    queue = AudioQueue.get_queue(ctx.guild.id)
+    queue_len = len(queue)
+
+    # Ошибка, если очередь пуста
+    if queue_len == 0:
+        return await ctx.send(_lang['error.queue_empty'])
+
+    queue.clear()
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.queue_cleared'].format(queue_len))
+
+
+
+@bot.command('playlast', aliases=['last', 'latest'])
+async def playlast(ctx: Context):
+    "Воспроизвести последнюю музыку"
+
+    controller = AudioController.get_controller(ctx.voice_client)
+
+    # Ошибка, если последняя музыка не найдена
+    if controller.queue.latest is None:
+        return await ctx.send(_lang['error.no_last_video'])
+
+    controller.queue.set_next(controller.queue.latest)
+
+    # Воспроизвести последнюю музыку
+    controller.skip()
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.playing_last'])

@@ -1,6 +1,6 @@
 text.empty=Пусто
 
-result.ping=Pong!
+result.searching=Поиск...
 result.queue=**Очередь воспроизведения**:\n{0}
 result.queue.empty=Очередь воспроизведения пуста
 result.video_stopped=Видео остановлено
@@ -11,10 +11,13 @@ result.video_added=Видео добавлено в очередь {0}
 result.video_skipped=Видео пропущено
 result.replay_enabled=Автовоспроизведение включено
 result.replay_disabled=Автовоспроизведение отключено
+result.queue_cleared=Очередь воспроизведения очищена: -{0} песен
+result.playing_last=Воспроизведение последнего видео
 
 error.args.spam=Неверное использование команды.\n\nПример: `$spam <кол-во> <задержка> <любой текст>`\n\n`<количество>` - целое число от `1` до `100`\n`<задержка>` - число от `0.5` до `60` секунд
 error.args.spam.count=Количество должно быть от 1 до 100
 error.args.spam.delay=Задержка должна быть от 0.5 до 60 секунд
+error.args.stopspam.code=Неверный код. Может, оно того не стоит?
 error.not_in_voice_channel=Вы не подключены к голосовому каналу
 error.not_playing=Музыка не проигрывается
 error.already_playing=Музыка уже проигрывается
@@ -22,3 +25,4 @@ error.already_paused=Музыка уже на паузе
 error.already_stopped=Музыка уже остановлена
 error.queue_empty=В очереди нет музыки
 error.replay_playlist_not_supported=Автовоспроизведение не поддерживается для плейлистов
+error.no_last_video=Последнее видео не найдено

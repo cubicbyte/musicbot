@@ -2,7 +2,7 @@ import os
 import logging
 from bot.data import GuildData, LanguageManager, AudioQueue
 from settings import bot, LANGS_DIR
-from bot.utils import is_users_in_channel, get_bot_channel
+from bot.utils.discord_utils import is_users_in_channel, get_bot_channel
 
 logger = logging.getLogger('bot')
 LanguageManager.load(LANGS_DIR)

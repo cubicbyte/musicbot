@@ -3,8 +3,8 @@
 """
 
 from discord import VoiceClient, FFmpegPCMAudio
-from .schemas import AudioSource
 from settings import FFMPEG_OPTIONS
+from .schemas import AudioSource
 
 
 
@@ -38,12 +38,14 @@ class AudioQueue(list):
 
 
     def __init__(self, guild_id: int) -> None:
-        self.guild_id = guild_id
+        self.guild_id: int = guild_id
         "ID сервера"
-        self.on_replay = False
+        self.on_replay: bool = False
         "Автоповтор музыки"
-        self._current = None
+        self._current: AudioSource | None = None
         "Текущая музыка"
+        self._latest: AudioSource | None = None
+        "Последняя проигранная музыка"
 
 
     @property
@@ -66,10 +68,10 @@ class AudioQueue(list):
 
         for _ in range(count):
             if len(self) == 0:
-                self._current = None
+                self.current = None
                 break
 
-            self._current = self.pop(0)
+            self.current = self.pop(0)
 
 
     def next(self) -> AudioSource | None:
@@ -81,18 +83,31 @@ class AudioQueue(list):
         return self.current
 
 
+    def set_next(self, audio: AudioSource | list[AudioSource]):
+        "Установить следующую музыку"
+
+        if isinstance(audio, list):
+            for i, aud in enumerate(audio):
+                self.insert(i, aud)
+        else:
+            self.insert(0, audio)
+
+
+    @property
+    def latest(self) -> AudioSource | None:
+        "Последняя проигранная музыка"
+        return self._latest
+
+
     @property
     def current(self) -> AudioSource | None:
         "Текущая музыка"
-
-        if self._current is None and len(self) != 0:
-            self._current = self.pop(0)
-
         return self._current
 
 
     @current.setter
     def current(self, value: AudioSource | None):
+        self._latest = self.current or self._latest or value
         self._current = value
 
 
@@ -180,9 +195,12 @@ class AudioController:
     def skip(self, count: int = 1):
         "Пропустить музыку"
 
-        self.queue.skip(count)
-        self.stop()
-        self.play()
+        self.queue.skip(count - 1)
+
+        if self.voice_client.is_playing():
+            self.voice_client.stop()
+        else:
+            self.play()
 
 
     @property
