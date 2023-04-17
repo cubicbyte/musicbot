@@ -20,12 +20,16 @@ _lang = LanguageManager.get_lang(os.getenv('DEFAULT_LANG'))
 async def ping(ctx: Context):
     "Проверить работоспособность бота"
 
-    await ctx.send(_lang['result.ping'])
+    await ctx.send('Pong!')
 
 
 
-@bot.command('echo', aliases=['say'])
-async def echo(ctx, *, message: str):
+@bot.command('echo', aliases=['say', 'bot'])
+async def echo(
+    ctx,
+    *,
+    message: str = parameter(description='Сообщение')
+):
     "Отправить сообщение от лица бота"
 
     await ctx.send(message)
@@ -63,7 +67,7 @@ async def leave(ctx: Context) -> bool:
 
 
 
-@bot.command()
+@bot.command('spam', aliases=['flood'])
 async def spam(
     ctx: Context,
     count: int = parameter(description='Количество повторов'),
@@ -86,8 +90,8 @@ async def spam(
 
 
 
-@bot.command()
-async def switch(
+@bot.command('stopspam', aliases=['switch'])
+async def stopspam(
     ctx: Context,
     *,
     code: str = parameter(description='Код для остановки спама. Только жильцы самих недр владеют этим знанием.')
@@ -98,13 +102,15 @@ async def switch(
 
     if code == correct_code:
         GuildData.get(ctx.guild.id).spam.stop()
+    else:
+        await ctx.send(_lang['error.args.stopspam.code'])
 
 
 
 @bot.command('getlink', aliases=['geturl', 'link'])
 async def getlink(
     ctx: Context,
-    url: str = parameter(description='Ссылка на видео или поисковый запрос'),
+    url: str = parameter(description='Ссылка на видео'),
     result_type: str = parameter(default='video', description='Тип результата (video, audio)')
 ):
     "Получить прямую ссылку на видео/аудио"
@@ -152,7 +158,7 @@ async def play(
 
 
 
-@bot.command('add', aliases=['a'])
+@bot.command('add', aliases=['a', '+'])
 async def add(
     ctx: Context,
     *,
@@ -187,7 +193,7 @@ async def add(
 
 
 
-@bot.command('skip', aliases=['next'])
+@bot.command('skip', aliases=['next', 'nx', 'sk'])
 async def skip(
     ctx: Context,
     count: int = parameter(default=1, description='Количество песен для пропуска')
@@ -249,7 +255,7 @@ async def pause(ctx: Context):
 
 
 
-@bot.command()
+@bot.command('resume', aliases=['continue', 'unpause', 'res'])
 async def resume(ctx: Context):
     "Продолжить воспроизведение"
 
@@ -268,7 +274,7 @@ async def resume(ctx: Context):
 
 
 
-@bot.command()
+@bot.command('replay', aliases=['repeat', 'loop', 'repl', 'rep', 'rp'])
 async def replay(
     ctx: Context,
     *,
@@ -309,7 +315,7 @@ async def replay(
 
 
 
-@bot.command()
+@bot.command('queue', aliases=['list'])
 async def queue(ctx: Context):
     "Показать очередь"
 

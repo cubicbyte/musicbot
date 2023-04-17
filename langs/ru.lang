@@ -1,6 +1,5 @@
 text.empty=Пусто
 
-result.ping=Pong!
 result.queue=**Очередь воспроизведения**:\n{0}
 result.queue.empty=Очередь воспроизведения пуста
 result.video_stopped=Видео остановлено
@@ -17,6 +16,7 @@ result.playing_last=Воспроизведение последнего виде
 error.args.spam=Неверное использование команды.\n\nПример: `$spam <кол-во> <задержка> <любой текст>`\n\n`<количество>` - целое число от `1` до `100`\n`<задержка>` - число от `0.5` до `60` секунд
 error.args.spam.count=Количество должно быть от 1 до 100
 error.args.spam.delay=Задержка должна быть от 0.5 до 60 секунд
+error.args.stopspam.code=Неверный код. Может, оно того не стоит?
 error.not_in_voice_channel=Вы не подключены к голосовому каналу
 error.not_playing=Музыка не проигрывается
 error.already_playing=Музыка уже проигрывается

@@ -131,7 +131,7 @@ class YoutubeVideo(AudioSource):
             duration_str=vid_info.get('duration_str'),
             thumbnail=vid_info.get('thumbnail'),
         )
-    
+
     @property
     def url(self) -> str:
         "Ссылка на видео"
