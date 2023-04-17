@@ -13,7 +13,7 @@ result.replay_enabled=Автовоспроизведение включено
 result.replay_disabled=Автовоспроизведение отключено
 result.queue_cleared=Очередь воспроизведения очищена: -{0} песен
 result.playing_last=Воспроизведение последнего видео
-result.language_help=Язык бота: {0}\n\nДоступные языки:\n**uk** - Украинский\n**ru** - Русский
+result.language_help=Язык бота: **{0}**\n\nДоступные языки:\n**uk** - Украинский\n**ru** - Русский
 result.languages=Доступные языки:\n**uk** - Украинский\n**ru** - Русский
 result.language_set=Язык бота изменен
 

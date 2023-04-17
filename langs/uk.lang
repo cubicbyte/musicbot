@@ -13,7 +13,7 @@ result.replay_enabled=Автопрогравання увімкнено
 result.replay_disabled=Автопрогравання вимкнено
 result.queue_cleared=Черга програвання очищена: -{0} пісень
 result.playing_last=Програвання останнього відео
-result.language_help=Мова бота: {0}\n\nДоступні мови:\n**uk** - Українська\n**ru** - Російська
+result.language_help=Мова бота: **{0}**\n\nДоступні мови:\n**uk** - Українська\n**ru** - Російська
 result.languages=Доступні мови:\n**uk** - Українська\n**ru** - Російська
 result.language_set=Мова бота змінена
 

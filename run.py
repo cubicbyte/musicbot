@@ -1,19 +1,11 @@
 import os
 import logging
-from bot.data import GuildData, LanguageManager, AudioQueue
-from settings import bot, LANGS_DIR
+from bot.data import GuildData, AudioQueue
+from settings import bot
 from bot.utils.discord_utils import is_users_in_channel, get_bot_channel
+from bot import commands
 
 logger = logging.getLogger('bot')
-LanguageManager.load(LANGS_DIR)
-
-# Проверка верность языка по умолчанию
-if not os.getenv('DEFAULT_LANG') in LanguageManager._langs:
-    raise ValueError(f'Поле DEFAULT_LANG в файле .env имеет несуществующий язык: {os.getenv("DEFAULT_LANG")}. Список доступных языков: ({", ".join(LanguageManager._langs.keys())})')
-
-
-# Импорт только здесь потому, что модуль ссылается на LanguageManager, который должен быть загружен первее.
-from bot import commands
 
 
 
