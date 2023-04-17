@@ -32,7 +32,7 @@ os.environ.setdefault('BOT_COMMAND_PREFIX', '$')
 os.environ.setdefault('DEFAULT_LANG', 'ru')
 os.environ.setdefault('LOG_FILEPATH', 'debug.log')
 os.environ.setdefault('LOG_LEVEL', 'INFO')
-os.environ.setdefault('LOG_FORMAT', '%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+os.environ.setdefault('LOG_FORMAT', logging.BASIC_FORMAT)
 
 # Проверка наличия всех обязательных параметров
 assert os.getenv('BOT_TOKEN') is not None, 'BOT_TOKEN не указан. Пожалуйста, прочитайте README.md, чтобы узнать, как настроить бота.'

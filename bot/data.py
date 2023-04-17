@@ -39,7 +39,7 @@ class LanguageManager:
 
 
     @staticmethod
-    def get_lang(lang_code: str) -> Language:
+    def get_lang(lang_code: str) -> Language | None:
         "Получить язык по его коду"
 
         return LanguageManager._langs.get(lang_code)
@@ -69,11 +69,11 @@ class GuildData:
     def queue(self) -> AudioQueue:
         "Очередь музыки"
 
-        return AudioQueue.get(self.guild_id)
+        return AudioQueue.get_queue(self.guild_id)
 
 
-
-    def get(guild_id: int) -> 'GuildData':
+    @staticmethod
+    def get_instance(guild_id: int) -> 'GuildData':
         "Получить экземпляр класса GuildData для сервера с указанным ID"
 
         _guild_id = str(guild_id)

@@ -7,6 +7,11 @@ from bot.utils.discord_utils import is_users_in_channel, get_bot_channel
 logger = logging.getLogger('bot')
 LanguageManager.load(LANGS_DIR)
 
+# Проверка верность языка по умолчанию
+if not os.getenv('DEFAULT_LANG') in LanguageManager._langs:
+    raise ValueError(f'Поле DEFAULT_LANG в файле .env имеет несуществующий язык: {os.getenv("DEFAULT_LANG")}. Список доступных языков: ({", ".join(LanguageManager._langs.keys())})')
+
+
 # Импорт только здесь потому, что модуль ссылается на LanguageManager, который должен быть загружен первее.
 from bot import commands
 
@@ -43,7 +48,7 @@ async def on_voice_state_update(member, before, after):
     if after is not None and after.channel is not None:
         if after.channel.id == ch.id:
             return
-        if GuildData.get(ch.guild.id).make_move():
+        if GuildData.get_instance(ch.guild.id).make_move():
             await ch.guild.voice_client.move_to(after.channel)
 
     # Ливнуть с канала
@@ -53,7 +58,7 @@ async def on_voice_state_update(member, before, after):
         #await sleep(0.75)
         #if not is_users_in_channel(ch):
         await ch.guild.voice_client.disconnect()
-        AudioQueue.get(ch.guild.id).unregister()
+        AudioQueue.del_queue(ch.guild.id)
 
 
 bot.run(os.getenv('BOT_TOKEN'))

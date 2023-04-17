@@ -9,7 +9,7 @@ from .schemas import AudioSource
 
 
 class AudioQueue(list):
-    _global_queue: dict[str, list[AudioSource]] = {}
+    _global_queue: dict[str, 'AudioQueue'] = {}
 
 
     @classmethod
@@ -51,6 +51,10 @@ class AudioQueue(list):
     @property
     def full_queue(self) -> list[AudioSource]:
         "Очередь с учётом текущей музыки"
+
+        if self.current is None:
+            return self.copy()
+
         return [self.current, *self]
 
 
