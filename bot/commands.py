@@ -328,6 +328,24 @@ async def queue(ctx: Context):
 
 
 
+@bot.command()
+async def clear(ctx: Context):
+    "Очистить очередь, не останавливая воспроизведение текущей музыки"
+
+    queue = AudioQueue.get_queue(ctx.guild.id)
+    queue_len = len(queue)
+
+    # Ошибка, если очередь пуста
+    if queue_len == 0:
+        return await ctx.send(_lang['error.queue_empty'])
+
+    queue.clear()
+
+    # Отправить сообщение
+    await ctx.send(_lang['result.queue_cleared'].format(queue_len))
+
+
+
 @bot.command('playlast', aliases=['last', 'latest'])
 async def playlast(ctx: Context):
     "Воспроизвести последнюю музыку"
