@@ -46,21 +46,37 @@ class BotDatabase:
         self._db.commit()
 
 
+    def _get_field(self, guild_id: int, field: str) -> str | None:
+        "Получить значение поля из таблицы по ключу"
+
+        row = self._db.execute(
+            f'SELECT {field} FROM guilds WHERE guild_id = ?',
+            (guild_id,)).fetchone()
+        
+        if row is None:
+            return None
+
+        return row[field]
+
+
+    def _set_field(self, guild_id: int, field: str, value: any) -> None:
+        "Установить значение поля в таблице по ключу"
+
+        self._db.execute(
+            f'INSERT OR REPLACE INTO guilds (guild_id, {field}) VALUES (?, ?)',
+            (guild_id, value))
+
+        self._db.commit()
+
+
     def get_guild_lang(self, guild_id: int) -> str | None:
         "Получить язык сервера"
-
-        row = self._db.execute('SELECT lang_code FROM guilds WHERE guild_id = ?', (guild_id,)).fetchone()
-        return row['lang_code']
+        return self._get_field(guild_id, 'lang_code')
 
 
     def set_guild_lang(self, guild_id: int, lang_code: str) -> None:
         "Установить язык сервера"
-
-        self._db.execute(
-            'INSERT OR REPLACE INTO guilds (guild_id, lang_code) VALUES (?, ?)',
-            (guild_id, lang_code)
-        )
-        self._db.commit()
+        self._set_field(guild_id, 'lang_code', lang_code)
 
 
 
