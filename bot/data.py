@@ -179,6 +179,41 @@ class GuildData:
         return True
 
 
+    def save_yt_video(self, video: YoutubeVideo, name: str) -> dict[str, YoutubeVideo]:
+        "Сохранить видео в базу данных"
+
+        saves = self._database.get_guild_yt_saves(self.guild_id)
+        saves[name] = video
+
+        self._database.set_guild_yt_saves(self.guild_id, saves)
+        return saves
+
+
+    def get_yt_saves(self) -> dict[str, YoutubeVideo]:
+        "Получить список сохранённых видео"
+        return self._database.get_guild_yt_saves(self.guild_id)
+
+
+    def get_saved_yt_video(self, name: str) -> YoutubeVideo | None:
+        "Получить сохранённое видео по имени"
+        return self._database.get_guild_yt_saves(self.guild_id).get(name)
+
+
+    def delete_saved_yt_video(self, name: str) -> dict[str, YoutubeVideo]:
+        "Удалить сохранённое видео по имени"
+
+        saves = self._database.get_guild_yt_saves(self.guild_id)
+        del saves[name]
+
+        self._database.set_guild_yt_saves(self.guild_id, saves)
+        return saves
+
+
+    def clear_yt_saves(self) -> None:
+        "Очистить список сохранённых видео"
+        self._database.set_guild_yt_saves(self.guild_id, {})
+
+
     def delete(self):
         "Удалить данные сервера"
         self.queue.delete()
