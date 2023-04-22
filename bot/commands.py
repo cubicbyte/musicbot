@@ -513,7 +513,7 @@ async def delsave(
 
 
 
-@bot.command('playsaved', aliases=['playsave'])
+@bot.command('playsaved', aliases=['playsave', 'ps'])
 async def playsaved(
     ctx: Context,
     name: str = parameter(description='Код-название видео (без пробелов)')
@@ -542,7 +542,7 @@ async def playsaved(
 
 
 
-@bot.command('replaysaved', aliases=['replaysave'])
+@bot.command('replaysaved', aliases=['replaysave', 'rs'])
 async def replaysaved(
     ctx: Context,
     name: str = parameter(description='Код-название видео (без пробелов)')
@@ -568,4 +568,4 @@ async def replaysaved(
     controller.play_now(video)
 
     # Отправить сообщение
-    await ctx.send(guild.lang['result.replay_enabled'])
+    await ctx.send(guild.lang['result.video_playing'].format(video.title))
