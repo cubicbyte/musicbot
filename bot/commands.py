@@ -146,22 +146,16 @@ async def play(
     # Отправить сообщение
     await ctx.send(guild.lang['result.searching'])
 
-    # Добавить видео в очередь
+    # Начать воспроизведение
     controller = AudioController.get_controller(ctx.voice_client)
     sources = youtube_utils.process_youtube_search(url_or_search)
-    controller.queue.set_next(sources)
+    controller.play_now(sources)
 
     # Отправить сообщение
     if len(controller.queue) != 0:
         video = controller.queue[0]
         title = '' if utils.is_url(video.origin_query) else video.url
         await ctx.send(guild.lang['result.video_playing'].format(title))
-
-    # Начать воспроизведение
-    if ctx.voice_client.is_playing():
-        controller.skip()
-    else:
-        controller.play()
 
 
 
@@ -188,8 +182,8 @@ async def add(
     await ctx.send(guild.lang['result.searching'])
 
     # Добавить песню в очередь
-    controller = AudioController.get_controller(ctx.voice_client)
     sources = youtube_utils.process_youtube_search(url_or_search)
+    controller = AudioController.get_controller(ctx.voice_client)
     controller.queue.extend(sources)
 
     # Отправить сообщение
@@ -322,14 +316,11 @@ async def replay(
     # Отправить сообщение
     await ctx.send(guild.lang['result.searching'])
 
-    # Включить повтор введенной музыки
-    controller = AudioController.get_controller(ctx.voice_client)
+    # Начать автовоспроизведение
     sources = youtube_utils.process_youtube_search(url_or_search)
-    guild.queue.on_replay = True
-    guild.queue.set_next(sources)
-
-    # Сразу начать воспроизведение
-    controller.skip()
+    controller = AudioController.get_controller(ctx.voice_client)
+    controller.queue.on_replay = True
+    controller.play_now(sources)
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.replay_enabled'])
