@@ -539,3 +539,33 @@ async def playsaved(
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.video_playing'].format(video.title))
+
+
+
+@bot.command('replaysaved', aliases=['replaysave'])
+async def replaysaved(
+    ctx: Context,
+    name: str = parameter(description='Код-название видео (без пробелов)')
+):
+    "Включить автовоспроизведение сохраненного видео"
+
+    # Подключиться к каналу
+    if ctx.voice_client is None:
+        if not await connect(ctx):
+            return
+
+    guild = GuildData.get_instance(ctx.guild.id)
+    saves = guild.get_yt_saves()
+
+    # Ошибка, если видео не найдено
+    if name not in saves:
+        return await ctx.send(guild.lang['error.video_not_found'])
+
+    # Начать воспроизведение
+    video = saves[name]
+    controller = AudioController.get_controller(ctx.voice_client)
+    controller.queue.on_replay = True
+    controller.play_now(video)
+
+    # Отправить сообщение
+    await ctx.send(guild.lang['result.replay_enabled'])
