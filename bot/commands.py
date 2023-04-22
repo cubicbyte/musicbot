@@ -475,3 +475,17 @@ async def saves(ctx: Context):
             f'**{name}**: {video.title}' for name, video in saves.items()
         ) or guild.lang['text.empty']
     ))
+
+
+
+@bot.command('clearsaves', aliases=['clearsave', 'clearsaved', 'clearsavedvideos', 'clearsavedvids'])
+async def clearsaves(ctx: Context):
+    "Очистить список сохраненных видео"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+    saves_len = len(guild.get_yt_saves())
+
+    guild.clear_yt_saves()
+
+    # Отправить сообщение
+    await ctx.send(guild.lang['result.saved_videos_cleared'].format(saves_len))
