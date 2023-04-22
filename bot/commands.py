@@ -459,3 +459,19 @@ async def save(
 
         guild.save_yt_video(guild.queue.current, name)
         await ctx.send(guild.lang['result.video_saved'].format(name))
+
+
+
+@bot.command('saves', aliases=['saved', 'getsaves', 'savedvideos', 'savedvids'])
+async def saves(ctx: Context):
+    "Показать список сохраненных видео"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+    saves = guild.get_yt_saves()
+
+    # Отправить сообщение
+    await ctx.send(guild.lang['result.saved_videos'].format(
+        '\n'.join(
+            f'**{name}**: {video.title}' for name, video in saves.items()
+        ) or guild.lang['text.empty']
+    ))
