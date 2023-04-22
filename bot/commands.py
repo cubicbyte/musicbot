@@ -2,11 +2,14 @@
 Модуль с командами бота
 """
 
+import os
+
 from datetime import datetime
 from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
 from settings import bot
 from . import utils
+from .schemas import YoutubeVideo
 from .utils import youtube_utils
 from .data import GuildData, langs
 from .audio import AudioQueue, AudioController
@@ -415,3 +418,44 @@ async def languages(ctx: Context):
 
     guild = GuildData.get_instance(ctx.guild.id)
     await ctx.send(guild.lang['result.languages'])
+
+
+
+@bot.command('save', aliases=['savevideo', 'savevid', 'savecurrent', 'savecur'])
+async def save(
+    ctx: Context,
+    name: str = parameter(description='Код-название видео (без пробелов)'),
+    *,
+    url_or_search: str = parameter(
+        default=None,
+        description='Ссылка на видео или поисковый запрос',
+        displayed_default='текущее видео'
+    )
+):
+    "Сохранить видео для быстрого доступа"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+
+    # Ошибка, если превышен лимит сохраненных видео
+    if len(guild.get_yt_saves()) >= int(os.getenv('SAVES_LIMIT')):
+        return await ctx.send(guild.lang['error.saves_limit'])
+
+    # Сохранить видео по ссылке или поисковому запросу
+    if url_or_search is not None:
+        videos = youtube_utils.process_youtube_search(url_or_search)
+
+        guild.save_yt_video(videos[0], name)
+        return await ctx.send(guild.lang['result.video_saved'].format(name))
+    
+    # Сохранить текущее видео
+    else:
+        # Ошибка, если текущее видео не найдено
+        if guild.queue.current is None:
+            return await ctx.send(guild.lang['error.no_current_video'])
+
+        # Ошибка, если текущее видео не является видео с YouTube
+        if not isinstance(guild.queue.current, YoutubeVideo):
+            return await ctx.send(guild.lang['error.not_youtube_video'])
+
+        guild.save_yt_video(guild.queue.current, name)
+        await ctx.send(guild.lang['result.video_saved'].format(name))

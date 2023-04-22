@@ -16,6 +16,7 @@ result.playing_last=Воспроизведение последнего виде
 result.language_help=Язык бота: **{0}**\n\nДоступные языки:\n**uk** - Украинский\n**ru** - Русский
 result.languages=Доступные языки:\n**uk** - Украинский\n**ru** - Русский
 result.language_set=Язык бота изменен
+result.video_saved=Видео сохранено
 
 error.args.spam=Неверное использование команды.\n\nПример: `$spam <кол-во> <задержка> <любой текст>`\n\n`<количество>` - целое число от `1` до `100`\n`<задержка>` - число от `0.5` до `60` секунд
 error.args.spam.count=Количество должно быть от 1 до 100
@@ -30,3 +31,6 @@ error.queue_empty=В очереди нет музыки
 error.replay_playlist_not_supported=Автовоспроизведение не поддерживается для плейлистов
 error.no_last_video=Последнее видео не найдено
 error.language_not_found=Язык не найден
+error.no_current_video=Сейчас ничего не проигрывается
+error.not_youtube_video=Это не видео YouTube
+error.saves_limit=Превышен лимит сохранённых видео: {0} шт.
