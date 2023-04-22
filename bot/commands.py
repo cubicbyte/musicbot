@@ -446,7 +446,7 @@ async def save(
 
         guild.save_yt_video(videos[0], name)
         return await ctx.send(guild.lang['result.video_saved'].format(name))
-    
+
     # Сохранить текущее видео
     else:
         # Ошибка, если текущее видео не найдено
@@ -489,3 +489,24 @@ async def clearsaves(ctx: Context):
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.saved_videos_cleared'].format(saves_len))
+
+
+
+@bot.command('delsave', aliases=['unsave', 'remsave', 'deletevideo', 'deletevid', 'deletesave', 'deletesaved', 'deletesavedvideo', 'deletesavedvid'])
+async def delsave(
+    ctx: Context,
+    name: str = parameter(description='Код-название видео (без пробелов)')
+):
+    "Удалить сохраненное видео"
+
+    guild = GuildData.get_instance(ctx.guild.id)
+    saves = guild.get_yt_saves()
+
+    # Ошибка, если видео не найдено
+    if name not in saves:
+        return await ctx.send(guild.lang['error.video_not_found'])
+
+    guild.delete_yt_save(name)
+
+    # Отправить сообщение
+    await ctx.send(guild.lang['result.video_deleted'].format(name))
