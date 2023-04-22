@@ -4,10 +4,11 @@
 
 import os
 import time
+import json
 import sqlite3
 from settings import LANGS_DIR
 from .audio import AudioQueue
-from .schemas import SpamState, Language
+from .schemas import SpamState, Language, YoutubeVideo
 from .utils import load_lang_file
 
 
@@ -45,10 +46,26 @@ class BotDatabase:
         self._db.execute('''
             CREATE TABLE IF NOT EXISTS guilds (
                 guild_id INTEGER PRIMARY KEY,
-                lang_code TEXT
+                lang_code TEXT,
+                saves JSON
             );
         ''')
         self._db.commit()
+
+
+    @staticmethod
+    def _saves_deserializer(_dict: dict) -> dict[str, YoutubeVideo]:
+        """
+        Десериализатор для сохранённых песен
+
+        Короче штука, которая парсит песни с базы данных, сохранённые в формате json,
+        и преобразует их в читаемый для программы формат
+        """
+
+        if 'title' in _dict:
+            return YoutubeVideo(**_dict)
+
+        return _dict
 
 
     def _get_field(self, guild_id: int, field: str) -> str | None:
@@ -81,6 +98,22 @@ class BotDatabase:
     def set_guild_lang(self, guild_id: int, lang_code: str) -> None:
         "Установить язык сервера"
         self._set_field(guild_id, 'lang_code', lang_code)
+
+
+    def get_guild_yt_saves(self, guild_id: int) -> dict[str, YoutubeVideo]:
+        "Получить список сохранённых песен"
+
+        res = self._get_field(guild_id, 'saves')
+        if res is None:
+            return {}
+
+        saves = json.loads(res, object_hook=self._saves_deserializer)
+        return saves
+
+    def set_guild_yt_saves(self, guild_id: int, saves: dict[str, YoutubeVideo]) -> None:
+        "Установить список сохранённых песен"
+        json_str = json.dumps(saves, default=lambda o: o.__dict__)
+        self._set_field(guild_id, 'saves', json_str)
 
 
 
