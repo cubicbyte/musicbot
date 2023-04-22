@@ -77,7 +77,7 @@ class AudioQueue(list):
     def next(self) -> AudioSource | None:
         "Следующая музыка"
 
-        if not self.on_replay:
+        if not self.on_replay or self.current is None:
             self.skip()
 
         return self.current

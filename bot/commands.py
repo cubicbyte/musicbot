@@ -155,8 +155,8 @@ async def play(
     controller.play_now(sources)
 
     # Отправить сообщение
-    if len(controller.queue) != 0:
-        video = controller.queue[0]
+    video = controller.queue.current
+    if video is not None:
         title = '' if utils.is_url(video.origin_query) else video.url
         await ctx.send(guild.lang['result.video_playing'].format(title))
 
