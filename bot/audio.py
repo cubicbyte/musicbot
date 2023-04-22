@@ -203,6 +203,17 @@ class AudioController:
             self.play()
 
 
+    def play_now(self, audio: AudioSource | list[AudioSource]):
+        "Проиграть музыку сразу"
+
+        self.queue.set_next(audio)
+
+        if self.voice_client.is_playing():
+            self.voice_client.stop()
+        else:
+            self.play()
+
+
     @property
     def queue(self) -> AudioQueue:
         "Очередь музыки"

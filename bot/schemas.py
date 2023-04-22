@@ -100,7 +100,7 @@ class YoutubeVideo(AudioSource):
     origin_query: str
     "Оригинальный запрос поиска"
     id: str
-    "ID видео (`https://www.youtube.com/watch?v= > tPEE9ZwTmy0 <`)"
+    "ID видео (https://www.youtube.com/watch?v= `tPEE9ZwTmy0`)"
     title: str
     "Название видео"
     author: str
