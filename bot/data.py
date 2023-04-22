@@ -42,7 +42,12 @@ class BotDatabase:
     def _init_db(self):
         "Инициализировать базу данных"
 
-        self._db.execute('CREATE TABLE IF NOT EXISTS guilds (guild_id INTEGER PRIMARY KEY, lang_code TEXT)')
+        self._db.execute('''
+            CREATE TABLE IF NOT EXISTS guilds (
+                guild_id INTEGER PRIMARY KEY,
+                lang_code TEXT
+            );
+        ''')
         self._db.commit()
 
 
@@ -52,7 +57,7 @@ class BotDatabase:
         row = self._db.execute(
             f'SELECT {field} FROM guilds WHERE guild_id = ?',
             (guild_id,)).fetchone()
-        
+
         if row is None:
             return None
 
@@ -73,7 +78,6 @@ class BotDatabase:
         "Получить язык сервера"
         return self._get_field(guild_id, 'lang_code')
 
-
     def set_guild_lang(self, guild_id: int, lang_code: str) -> None:
         "Установить язык сервера"
         self._set_field(guild_id, 'lang_code', lang_code)
@@ -83,11 +87,13 @@ class BotDatabase:
 class GuildData:
     "Данные сервера"
 
-    _global_data = {}
-    "Глобальный словарь данных серверов"
+
     MOVE_CD_S = 0.75
     "Кулдаун перемещения бота между голосовыми каналами (в секундах)"
-    database: BotDatabase
+
+    _global_data = {}
+    "Глобальный словарь данных серверов"
+    _database: BotDatabase
     "База данных для хранения постоянных данных"
 
 
@@ -98,7 +104,7 @@ class GuildData:
         "Текуший спам"
         self._last_move_timestamp: float = 0
         "Время последнего перемещения бота между голосовыми каналами"
-        self._lang_code: str = self.database.get_guild_lang(guild_id) or os.getenv('DEFAULT_LANG')
+        self._lang_code: str = self._database.get_guild_lang(guild_id) or os.getenv('DEFAULT_LANG')
         "Код языка сервера"
 
 
@@ -155,7 +161,7 @@ class GuildData:
     def lang_code(self, value: str) -> None:
         "Установить код языка сервера"
         self._lang_code = value
-        self.database.set_guild_lang(self.guild_id, value)
+        self._database.set_guild_lang(self.guild_id, value)
 
 
     @property
@@ -170,7 +176,7 @@ database: 'BotDatabase' = BotDatabase('bot-data.sqlite')
 langs: dict[str, Language] = _load_langs(LANGS_DIR)
 "Словарь языков"
 
-GuildData.database = database
+GuildData._database = database
 
 
 
