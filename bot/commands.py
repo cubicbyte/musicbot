@@ -190,7 +190,6 @@ async def add(
     controller.queue.extend(sources)
 
     # Отправить сообщение
-    # TODO сейчас оно выводит название последнего видео очереди. Если это плейлист, то вывести его название
     if len(controller.queue) != 0:
         video = controller.queue[0]
         title = '' if utils.is_url(video.origin_query) else video.url
