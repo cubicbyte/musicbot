@@ -505,7 +505,7 @@ async def delsave(
     if name not in saves:
         return await ctx.send(guild.lang['error.video_not_found'])
 
-    guild.delete_yt_save(name)
+    guild.delete_saved_yt_video(name)
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.video_deleted'].format(name))
