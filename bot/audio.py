@@ -4,7 +4,8 @@
 
 from discord import VoiceClient, FFmpegPCMAudio
 from settings import FFMPEG_OPTIONS
-from .schemas import AudioSource
+from .schemas import AudioSource, SponsorBlockVideo
+from . import utils
 
 
 
@@ -172,8 +173,17 @@ class AudioController:
     def _play_music(self, audio: AudioSource):
         "Проиграть музыку"
 
+        if isinstance(audio, SponsorBlockVideo):
+            # Включить фильтр для пропуска спонсорских сегментов
+            ffmpeg_options = {
+                **FFMPEG_OPTIONS,
+                'options': utils.get_ffmpeg_sponsor_filter(audio.segments, audio.duration)
+            }
+        else:
+            ffmpeg_options = FFMPEG_OPTIONS
+
         self.voice_client.play(
-            FFmpegPCMAudio(audio.source_url, **FFMPEG_OPTIONS),
+            FFmpegPCMAudio(audio.source_url, **ffmpeg_options),
             after=self._play_loop
         )
 

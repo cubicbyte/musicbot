@@ -2,6 +2,7 @@
 Модуль с различными вспомогательными функциями
 """
 
+import sponsorblock as sb
 from ast import literal_eval
 from pathlib import Path
 from urllib.parse import urlparse
@@ -71,3 +72,41 @@ def is_url(string: str) -> bool:
         return False
 
     return all([r.scheme, r.netloc])
+
+
+
+def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -> str:
+    """
+    Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
+    """
+
+    skipped = len(segments)
+    filter_complex = ''
+
+
+    for i, segment in enumerate(segments):
+
+        # Определить начало и конец обрезки видео
+        if i == 0 and len(segments) != 1:
+            start = 0
+            end = int(segment.start)
+        else:
+            next_segment = segments[i + 1] if i + 1 < len(segments) else None
+            start = int(segment.end)
+            end = int(next_segment.start) if next_segment else vid_duration_s
+
+        if end - start < 1 and len(segments) > 1:
+            skipped -= 1
+            continue
+
+        segment_i = i + 1 - (len(segments) - skipped)
+        filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{segment_i}];"
+
+
+    for i in range(1, skipped + 1):
+        filter_complex += f"[a{i}]"
+
+
+    filter_complex += f"concat=n={skipped}:v=0:a=1[outa]"
+
+    return f'-filter_complex "{filter_complex}" -map "[outa]"'

@@ -2,6 +2,7 @@
 Модуль со всеми схемами данных, используемых в боте
 """
 
+import sponsorblock as sb
 from asyncio import sleep
 from dataclasses import dataclass
 
@@ -116,10 +117,10 @@ class YoutubeVideo(AudioSource):
 
 
     @staticmethod
-    def from_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
-        "Создать объект класса из результата `YoutubeDL().extract_info`"
+    def extract_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
+        "Извлечь информацию о видео из словаря `YoutubeDL.extract_info`"
 
-        return YoutubeVideo(
+        return dict(
             source_url=vid_info.get('url'),
             origin_query=vid_info.get('original_url'),
             id=vid_info.get('id'),
@@ -135,3 +136,12 @@ class YoutubeVideo(AudioSource):
     def url(self) -> str:
         "Ссылка на видео"
         return f'https://www.youtube.com/watch?v={self.id}'
+
+
+
+@dataclass
+class SponsorBlockVideo(YoutubeVideo):
+    "Расширение класса `YoutubeVideo` с информацией о сегментах SponsorBlock."
+
+    segments: list[sb.Segment]
+    "Список сегментов SponsorBlock"
