@@ -5,13 +5,13 @@
 import sponsorblock as sb
 from yt_dlp import YoutubeDL
 from settings import YDL_OPTIONS
-from ..schemas import SponsorBlockVideo
+from ..schemas import YoutubeVideo
 
 _sb_client = sb.Client()
 
 
 
-def process_youtube_search(url_or_search: str) -> list[SponsorBlockVideo]:
+def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
     """
     Возвращает список `YoutubeVideo` из ссылки или поискового запроса.
 
@@ -29,11 +29,9 @@ def process_youtube_search(url_or_search: str) -> list[SponsorBlockVideo]:
     if ydl_res.get('_type') == 'playlist':
         for video in ydl_res['entries']:
             video['original_url'] = ydl_res.get('original_url')
-            segments = get_skip_segments(video['id'])
-            res.append(SponsorBlockVideo(**SponsorBlockVideo.extract_ydl(video), segments=segments))
+            res.append(YoutubeVideo(**YoutubeVideo.extract_ydl(video)))
     else:
-        segments = get_skip_segments(ydl_res['id'])
-        res.append(SponsorBlockVideo(**SponsorBlockVideo.extract_ydl(ydl_res), segments=segments))
+        res.append(YoutubeVideo(**YoutubeVideo.extract_ydl(ydl_res)))
 
     return res
 
@@ -54,7 +52,7 @@ def search_youtube(url_or_search: str) -> dict[str, any]:
 
 
 
-def get_skip_segments(video_id: str) -> list[sb.Segment]:
+def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
     """
     Получить сегменты для пропуска из видео с помощью SponsorBlock.
 
@@ -65,4 +63,45 @@ def get_skip_segments(video_id: str) -> list[sb.Segment]:
     :return: Список сегментов
     """
 
-    return _sb_client.get_skip_segments(video_id)
+    try:
+        return _sb_client.get_skip_segments(video_id)
+    except: #sb.errors.HTTPException:
+        return None
+
+
+
+def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -> str:
+    """
+    Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
+    """
+
+    skipped = len(segments)
+    filter_complex = ''
+
+
+    for i, segment in enumerate(segments):
+
+        # Определить начало и конец обрезки видео
+        if i == 0 and len(segments) != 1:
+            start = 0
+            end = int(segment.start)
+        else:
+            next_segment = segments[i + 1] if i + 1 < len(segments) else None
+            start = int(segment.end)
+            end = int(next_segment.start) if next_segment else vid_duration_s
+
+        if end - start < 1 and len(segments) > 1:
+            skipped -= 1
+            continue
+
+        segment_i = i + 1 - (len(segments) - skipped)
+        filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{segment_i}];"
+
+
+    for i in range(1, skipped + 1):
+        filter_complex += f"[a{i}]"
+
+
+    filter_complex += f"concat=n={skipped}:v=0:a=1[outa]"
+
+    return f'-filter_complex "{filter_complex}" -map "[outa]"'

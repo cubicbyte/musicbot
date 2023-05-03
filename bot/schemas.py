@@ -136,12 +136,3 @@ class YoutubeVideo(AudioSource):
     def url(self) -> str:
         "Ссылка на видео"
         return f'https://www.youtube.com/watch?v={self.id}'
-
-
-
-@dataclass
-class SponsorBlockVideo(YoutubeVideo):
-    "Расширение класса `YoutubeVideo` с информацией о сегментах SponsorBlock."
-
-    segments: list[sb.Segment]
-    "Список сегментов SponsorBlock"
