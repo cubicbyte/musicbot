@@ -175,11 +175,18 @@ class AudioController:
 
         ffmpeg_options = FFMPEG_OPTIONS.copy()
 
+        # Применить буферизацию
+        if ffmpeg_options.get('options') is None:
+            ffmpeg_options['options'] = ''
+        else:
+            ffmpeg_options['options'] += ' '
+        ffmpeg_options['options'] += '-bufsize 16M' # 16 мегабайт
+
         # Использовать фильтр для спонсорских сегментов (интеграция SponsorBlock)
         if isinstance(audio, YoutubeVideo):
             segments = youtube_utils.get_skip_segments(audio.id)
             if segments is not None:
-                ffmpeg_options['options'] = youtube_utils.get_ffmpeg_sponsor_filter(segments, audio.duration)
+                ffmpeg_options['options'] += ' ' + youtube_utils.get_ffmpeg_sponsor_filter(segments, audio.duration)
 
         self.voice_client.play(
             FFmpegPCMAudio(audio.source_url, **ffmpeg_options),
