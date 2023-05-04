@@ -73,23 +73,30 @@ def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
 def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -> str:
     """
     Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
+
+    Работает по принципу тримминга частей аудиодорожки, не содержащих сегменты, с последующей конкатенацией.
     """
 
     skipped = len(segments)
     filter_complex = ''
 
 
+    # Включить промежуток между началом видео и первым сегментом
+    start = 0
+    end = segments[0].start
+    if end - start > 1:
+        filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a0];"
+        skipped += 1
+
+    # Включить промежутки между остальными сегментами
     for i, segment in enumerate(segments):
 
         # Определить начало и конец обрезки видео
-        if i == 0 and len(segments) != 1:
-            start = 0
-            end = int(segment.start)
-        else:
-            next_segment = segments[i + 1] if i + 1 < len(segments) else None
-            start = int(segment.end)
-            end = int(next_segment.start) if next_segment else vid_duration_s
+        next_segment = segments[i + 1] if i + 1 < len(segments) else None
+        start = segment.end
+        end = next_segment.start if next_segment else vid_duration_s
 
+        # Если промежуток слишком маленький, то пропустить его
         if end - start < 1 and len(segments) > 1:
             skipped -= 1
             continue
