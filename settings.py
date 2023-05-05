@@ -11,7 +11,6 @@ from discord.ext import commands
 from discord.flags import Intents
 
 
-
 # Загрузка переменных окружения (конфиг бота)
 load_dotenv()       # Из файла .env в папке бота
 load_dotenv('.env') # Из файла .env в папке, откуда был запущен бот
@@ -42,7 +41,6 @@ assert os.getenv('BOT_TOKEN') is not None, 'BOT_TOKEN не указан. ' + _EN
 assert os.getenv('SAVES_LIMIT').isdigit(), 'SAVES_LIMIT должен быть числом. ' + _ENV_HELP
 
 
-
 # Создание папки логов
 os.makedirs(os.path.dirname(os.path.join('.', os.getenv('LOG_FILEPATH'))), exist_ok=True)
 
@@ -55,7 +53,6 @@ logging.basicConfig(
 
 _logger = logging.getLogger(__name__)
 _logger.info('Loading settings...')
-
 
 
 indents = Intents.default()

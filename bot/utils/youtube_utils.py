@@ -11,7 +11,6 @@ from bot.schemas import YoutubeVideo
 _sb_client = sb.Client()
 
 
-
 def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
     """
     Возвращает список `YoutubeVideo` из ссылки или поискового запроса.
@@ -37,7 +36,6 @@ def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
     return res
 
 
-
 def search_youtube(url_or_search: str) -> dict[str, any]:
     """
     Получить информацию о видео с YouTube.
@@ -50,7 +48,6 @@ def search_youtube(url_or_search: str) -> dict[str, any]:
         ydl_res = ydl.extract_info(url_or_search, download=False)
 
     return ydl_res
-
 
 
 def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
@@ -70,7 +67,6 @@ def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
         return None
 
 
-
 def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -> str:
     """
     Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
@@ -81,7 +77,6 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
 
     skipped = len(segments)
     filter_complex = ''
-
 
     # Включить промежуток между началом видео и первым сегментом
     start = 0
@@ -106,10 +101,8 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
         segment_i = i + 1 - (len(segments) - skipped)
         filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{segment_i}];"
 
-
     for i in range(1, skipped + 1):
         filter_complex += f"[a{i}]"
-
 
     filter_complex += f"concat=n={skipped}:v=0:a=1[outa]"
 

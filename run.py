@@ -13,12 +13,10 @@ from bot.utils.discord_utils import is_users_in_channel, get_bot_channel
 logger = logging.getLogger('bot')
 
 
-
 @bot.event
 async def on_ready():
-    'Выполняется при запуске бота'
+    """Выполняется при запуске бота"""
     logger.info('Bot is ready!')
-
 
 
 @bot.event
@@ -41,7 +39,6 @@ async def on_voice_state_update(member, before, after):
     if is_users_in_channel(ch):
         return
 
-
     # Перейти в канал пользователя, если он его сменил
     if after is not None and after.channel is not None:
         if after.channel.id == ch.id:
@@ -51,10 +48,10 @@ async def on_voice_state_update(member, before, after):
 
     # Ливнуть с канала
     else:
-        #Защита от случайного отключения человека от канала
-        #Если пользователь в течении 750мс не вернётся в канал, то бот отключится
-        #await sleep(0.75)
-        #if not is_users_in_channel(ch):
+        # Защита от случайного отключения человека от канала
+        # Если пользователь в течении 750мс не вернётся в канал, то бот отключится
+        # await sleep(0.75)
+        # if not is_users_in_channel(ch):
         await ch.guild.voice_client.disconnect()
         AudioQueue.del_queue(ch.guild.id)
 

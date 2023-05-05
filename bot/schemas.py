@@ -6,18 +6,16 @@ from asyncio import sleep
 from dataclasses import dataclass
 
 
-
 class Language(dict):
     """
     Обёртка вокруг языкового словаря.\n
     При отсутствии ключа в словаре возвращает сам ключ, имеет свойство `lang_code`.
     """
 
-
     def __init__(
-        self,
-        lang: dict[str, str] | None = None,
-        lang_code: str | None = None
+            self,
+            lang: dict[str, str] | None = None,
+            lang_code: str | None = None
     ) -> None:
         """
         :param lang: Языковой словарь
@@ -29,18 +27,14 @@ class Language(dict):
         self.lang_code = lang_code
         "Код языка"
 
-
     def __str__(self) -> str | None:
         return self.lang_code
-
 
     def __missing__(self, __key: str) -> str:
         return __key
 
-
     def get(self, __key: str) -> str:
         return self[__key]
-
 
 
 @dataclass
@@ -52,15 +46,14 @@ class SpamState:
     ...     await ctx.send(text)
     """
 
-    text:       str
+    text: str
     "Текст спама"
-    repeats:    int
+    repeats: int
     "Количество повторений"
-    delay:      float
+    delay: float
     "Задержка между повторениями в секундах"
-    progress:   int = 0
+    progress: int = 0
     "Текущий прогресс"
-
 
     async def __aiter__(self):
         """Асинхронный итератор для спама.
@@ -76,26 +69,23 @@ class SpamState:
             self.progress += 1
             await sleep(self.delay)
 
-
     def stop(self):
-        "Остановить спам"
+        """Остановить спам"""
 
         self.progress = self.repeats
 
 
-
 @dataclass
 class AudioSource:
-    "Класс для хранения информации о аудио-файле."
+    """Класс для хранения информации о аудио-файле."""
 
     source_url: str
     "Прямая ссылка на файл с аудиодорожкой"
 
 
-
 @dataclass
 class YoutubeVideo(AudioSource):
-    "Класс для хранения информации о видео."
+    """Класс для хранения информации о видео."""
 
     origin_query: str
     "Оригинальный запрос поиска"
@@ -114,10 +104,9 @@ class YoutubeVideo(AudioSource):
     thumbnail: str
     "Ссылка на превью видео"
 
-
     @staticmethod
     def extract_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
-        "Извлечь информацию о видео из словаря `YoutubeDL.extract_info`"
+        """Извлечь информацию о видео из словаря `YoutubeDL.extract_info`"""
 
         return dict(
             source_url=vid_info.get('url'),
@@ -133,5 +122,5 @@ class YoutubeVideo(AudioSource):
 
     @property
     def url(self) -> str:
-        "Ссылка на видео"
+        """Ссылка на видео"""
         return f'https://www.youtube.com/watch?v={self.id}'

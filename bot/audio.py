@@ -8,7 +8,6 @@ from bot.schemas import AudioSource, YoutubeVideo
 from bot.utils import youtube_utils
 
 
-
 class AudioQueue(list):
     """
     Очередь музыки
@@ -17,10 +16,9 @@ class AudioQueue(list):
     _global_queue: dict[str, 'AudioQueue'] = {}
     "Глобальный словарь очередей для всех серверов"
 
-
     @classmethod
     def get_queue(cls, guild_id: int) -> 'AudioQueue':
-        "Получить очередь для отдельного сервера"
+        """Получить очередь для отдельного сервера"""
 
         _guild_id = str(guild_id)
         queue = cls._global_queue.get(_guild_id)
@@ -32,16 +30,14 @@ class AudioQueue(list):
 
         return queue
 
-
     @classmethod
     def del_queue(cls, guild_id: int):
-        "Удалить очередь из глобального списка для очистки памяти"
+        """Удалить очередь из глобального списка для очистки памяти"""
 
         _guild_id = str(guild_id)
 
         if _guild_id in cls._global_queue:
             del cls._global_queue[_guild_id]
-
 
     def __init__(self, guild_id: int) -> None:
         self.guild_id: int = guild_id
@@ -53,24 +49,21 @@ class AudioQueue(list):
         self._latest: AudioSource | None = None
         "Последняя проигранная музыка"
 
-
     @property
     def full_queue(self) -> list[AudioSource]:
-        "Очередь с учётом текущей музыки"
+        """Очередь с учётом текущей музыки"""
 
         if self.current is None:
             return self.copy()
 
         return [self.current, *self]
 
-
     def delete(self):
-        "Удалить очередь из глобального списка для очистки памяти"
+        """Удалить очередь из глобального списка для очистки памяти"""
         AudioQueue.del_queue(self.guild_id)
 
-
     def skip(self, count: int = 1):
-        "Пропустить музыку"
+        """Пропустить музыку"""
 
         for _ in range(count):
             if len(self) == 0:
@@ -79,18 +72,16 @@ class AudioQueue(list):
 
             self.current = self.pop(0)
 
-
     def next(self) -> AudioSource | None:
-        "Следующая музыка"
+        """Следующая музыка"""
 
         if not self.on_replay or self.current is None:
             self.skip()
 
         return self.current
 
-
     def set_next(self, audio: AudioSource | list[AudioSource]):
-        "Установить следующую музыку"
+        """Установить следующую музыку"""
 
         if isinstance(audio, list):
             for i, aud in enumerate(audio):
@@ -98,24 +89,20 @@ class AudioQueue(list):
         else:
             self.insert(0, audio)
 
-
     @property
     def latest(self) -> AudioSource | None:
-        "Последняя проигранная музыка"
+        """Последняя проигранная музыка"""
         return self._latest
-
 
     @property
     def current(self) -> AudioSource | None:
-        "Текущая музыка"
+        """Текущая музыка"""
         return self._current
-
 
     @current.setter
     def current(self, value: AudioSource | None):
         self._latest = self.current or self._latest or value
         self._current = value
-
 
 
 class AudioController:
@@ -133,10 +120,9 @@ class AudioController:
 
     _controllers = {}
 
-
     @classmethod
     def get_controller(cls, voice_client: VoiceClient) -> 'AudioController':
-        "Получить контроллер для отдельного сервера"
+        """Получить контроллер для отдельного сервера"""
 
         cont = cls._controllers.get(voice_client.guild.id)
 
@@ -147,12 +133,10 @@ class AudioController:
 
         return cont
 
-
     def __init__(self, voice_client: VoiceClient) -> None:
         self.voice_client = voice_client
         self._loop_running = False
         "Флаг для остановки цикла проигрывания музыки"
-
 
     def _play_loop(self, error: any = None) -> None:
         """
@@ -174,9 +158,8 @@ class AudioController:
 
         self._play_music(next_audio)
 
-
     def _play_music(self, audio: AudioSource):
-        "Проиграть музыку"
+        """Проиграть музыку"""
 
         ffmpeg_options = FFMPEG_OPTIONS.copy()
 
@@ -185,7 +168,7 @@ class AudioController:
             ffmpeg_options['options'] = ''
         else:
             ffmpeg_options['options'] += ' '
-        ffmpeg_options['options'] += '-bufsize 16M' # 16 мегабайт
+        ffmpeg_options['options'] += '-bufsize 16M'  # 16 мегабайт
 
         # Использовать фильтр для спонсорских сегментов (интеграция SponsorBlock)
         if isinstance(audio, YoutubeVideo):
@@ -199,23 +182,20 @@ class AudioController:
             after=self._play_loop
         )
 
-
     def play(self):
-        "Проиграть музыку"
+        """Проиграть музыку"""
 
         self._loop_running = True
         self._play_loop()
 
-
     def stop(self):
-        "Остановить проигрывание музыки"
+        """Остановить проигрывание музыки"""
 
         self._loop_running = False
         self.voice_client.stop()
 
-
     def skip(self, count: int = 1):
-        "Пропустить музыку"
+        """Пропустить музыку"""
 
         self.queue.skip(count - 1)
 
@@ -224,9 +204,8 @@ class AudioController:
         else:
             self.play()
 
-
     def play_now(self, audio: AudioSource | list[AudioSource]):
-        "Проиграть музыку сразу"
+        """Проиграть музыку сразу"""
 
         self.queue.set_next(audio)
 
@@ -235,9 +214,8 @@ class AudioController:
         else:
             self.play()
 
-
     @property
     def queue(self) -> AudioQueue:
-        "Очередь музыки"
+        """Очередь музыки"""
 
         return AudioQueue.get_queue(self.voice_client.guild.id)

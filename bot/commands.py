@@ -16,13 +16,11 @@ from bot.data import GuildData, langs
 from bot.audio import AudioQueue, AudioController
 
 
-
 @bot.command()
 async def ping(ctx: Context):
-    "Проверить работоспособность бота"
+    """Проверить работоспособность бота"""
 
     await ctx.send('Pong!')
-
 
 
 @bot.command('echo', aliases=['say', 'bot'])
@@ -31,15 +29,14 @@ async def echo(
     *,
     message: str = parameter(description='Сообщение')
 ):
-    "Отправить сообщение от лица бота"
+    """Отправить сообщение от лица бота"""
 
     await ctx.send(message)
 
 
-
 @bot.command('connect', aliases=['join', 'j'])
 async def connect(ctx: Context) -> bool:
-    "Подключиться к голосовому каналу"
+    """Подключиться к голосовому каналу"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -55,10 +52,9 @@ async def connect(ctx: Context) -> bool:
     return True
 
 
-
 @bot.command('leave', aliases=['disconnect', 'quit', 'q', 'l'])
 async def leave(ctx: Context) -> bool:
-    "Отключиться от голосового канала"
+    """Отключиться от голосового канала"""
 
     # Если бот не в голосовом канале
     if ctx.voice_client is None:
@@ -69,16 +65,15 @@ async def leave(ctx: Context) -> bool:
     return True
 
 
-
 @bot.command('spam', aliases=['flood'])
 async def spam(
-    ctx: Context,
-    count: int = parameter(description='Количество повторов'),
-    delay: float = parameter(description='Задержка между повторами'),
-    *,
-    text: str = parameter(description='Текст для спама')
+        ctx: Context,
+        count: int = parameter(description='Количество повторов'),
+        delay: float = parameter(description='Задержка между повторами'),
+        *,
+        text: str = parameter(description='Текст для спама')
 ):
-    "Спамить текстом"
+    """Спамить текстом"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -94,16 +89,15 @@ async def spam(
         await ctx.send(text)
 
 
-
 @bot.command('stopspam', aliases=['switch'])
 async def stopspam(
-    ctx: Context,
-    *,
-    code: str = parameter(
-        description='Код для остановки спама. Только жильцы самих недр владеют этим знанием.'
-    )
+        ctx: Context,
+        *,
+        code: str = parameter(
+            description='Код для остановки спама. Только жильцы самих недр владеют этим знанием.'
+        )
 ):
-    "Остановить спам"
+    """Остановить спам"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     correct_code = datetime.now().strftime('%M%H')
@@ -114,14 +108,13 @@ async def stopspam(
         await ctx.send(guild.lang['error.args.stopspam.code'])
 
 
-
 @bot.command('getlink', aliases=['geturl', 'link'])
 async def getlink(
-    ctx: Context,
-    url: str = parameter(description='Ссылка на видео'),
-    result_type: str = parameter(default='video', description='Тип результата (video, audio)')
+        ctx: Context,
+        url: str = parameter(description='Ссылка на видео'),
+        result_type: str = parameter(default='video', description='Тип результата (video, audio)')
 ):
-    "Получить прямую ссылку на видео/аудио"
+    """Получить прямую ссылку на видео/аудио"""
 
     _format = 'bestaudio' if result_type == 'audio' else 'best*[acodec!=none]'
     video = YoutubeDL({'format': _format}).extract_info(url, download=False)
@@ -129,12 +122,11 @@ async def getlink(
     await ctx.send(video['url'])
 
 
-
 @bot.command('play', aliases=['p'])
 async def play(
-    ctx: Context,
-    *,
-    url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
+        ctx: Context,
+        *,
+        url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
 ):
     """Воспроизвести музыку"""
 
@@ -164,14 +156,13 @@ async def play(
         await ctx.send(guild.lang['result.video_playing'].format(title))
 
 
-
 @bot.command('add', aliases=['a', '+'])
 async def add(
-    ctx: Context,
-    *,
-    url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
+        ctx: Context,
+        *,
+        url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
 ):
-    "Добавить песню в очередь"
+    """Добавить песню в очередь"""
 
     # Подключиться к каналу
     if ctx.voice_client is None:
@@ -203,13 +194,12 @@ async def add(
         controller.play()
 
 
-
 @bot.command('skip', aliases=['next', 'nx', 'sk'])
 async def skip(
-    ctx: Context,
-    count: int = parameter(default=1, description='Количество песен для пропуска')
+        ctx: Context,
+        count: int = parameter(default=1, description='Количество песен для пропуска')
 ):
-    "Пропустить текущую песню"
+    """Пропустить текущую песню"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -223,7 +213,6 @@ async def skip(
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.video_skipped'])
-
 
 
 @bot.command('stop', aliases=['s'])
@@ -250,10 +239,9 @@ async def stop(ctx: Context):
     await ctx.send(guild.lang['result.video_stopped'])
 
 
-
 @bot.command('pause', aliases=['wait'])
 async def pause(ctx: Context):
-    "Поставить на паузу"
+    """Поставить на паузу"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -271,10 +259,9 @@ async def pause(ctx: Context):
     await ctx.send(guild.lang['result.video_paused'])
 
 
-
 @bot.command('resume', aliases=['continue', 'unpause', 'res'])
 async def resume(ctx: Context):
-    "Продолжить воспроизведение"
+    """Продолжить воспроизведение"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -292,14 +279,13 @@ async def resume(ctx: Context):
     await ctx.send(guild.lang['result.video_resumed'])
 
 
-
 @bot.command('replay', aliases=['repeat', 'loop', 'repl', 'rep', 'rp'])
 async def replay(
-    ctx: Context,
-    *,
-    url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
+        ctx: Context,
+        *,
+        url_or_search: str = parameter(default=None, description='Ссылка на видео или поисковый запрос')
 ):
-    "Поставить на повтор"
+    """Поставить на повтор"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -331,10 +317,9 @@ async def replay(
     await ctx.send(guild.lang['result.replay_enabled'])
 
 
-
 @bot.command('queue', aliases=['list'])
 async def queue(ctx: Context):
-    "Показать очередь"
+    """Показать очередь"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -350,10 +335,9 @@ async def queue(ctx: Context):
     ))
 
 
-
 @bot.command()
 async def clear(ctx: Context):
-    "Очистить очередь, не останавливая воспроизведение текущей музыки"
+    """Очистить очередь, не останавливая воспроизведение текущей музыки"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     queue_len = len(guild.queue)
@@ -368,10 +352,9 @@ async def clear(ctx: Context):
     await ctx.send(guild.lang['result.queue_cleared'].format(queue_len))
 
 
-
 @bot.command('playlast', aliases=['last', 'latest'])
 async def playlast(ctx: Context):
-    "Воспроизвести последнюю музыку"
+    """Воспроизвести последнюю музыку"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     controller = AudioController.get_controller(ctx.voice_client)
@@ -389,13 +372,12 @@ async def playlast(ctx: Context):
     await ctx.send(guild.lang['result.playing_last'])
 
 
-
 @bot.command('language', aliases=['lang'])
 async def language(
-    ctx: Context,
-    lang_code: str = parameter(default=None, description='Язык')
+        ctx: Context,
+        lang_code: str = parameter(default=None, description='Язык')
 ):
-    "Установить язык бота"
+    """Установить язык бота"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -413,28 +395,26 @@ async def language(
     await ctx.send(guild.lang['result.language_set'])
 
 
-
 @bot.command('languages', aliases=['langs'])
 async def languages(ctx: Context):
-    "Показать список доступных языков"
+    """Показать список доступных языков"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     await ctx.send(guild.lang['result.languages'])
 
 
-
 @bot.command('save', aliases=['savevideo', 'savevid', 'savecurrent', 'savecur'])
 async def save(
-    ctx: Context,
-    name: str = parameter(description='Код-название видео (без пробелов)'),
-    *,
-    url_or_search: str = parameter(
-        default=None,
-        description='Ссылка на видео или поисковый запрос',
-        displayed_default='текущее видео'
-    )
+        ctx: Context,
+        name: str = parameter(description='Код-название видео (без пробелов)'),
+        *,
+        url_or_search: str = parameter(
+            default=None,
+            description='Ссылка на видео или поисковый запрос',
+            displayed_default='текущее видео'
+        )
 ):
-    "Сохранить видео для быстрого доступа"
+    """Сохранить видео для быстрого доступа"""
 
     guild = GuildData.get_instance(ctx.guild.id)
 
@@ -463,10 +443,9 @@ async def save(
         await ctx.send(guild.lang['result.video_saved'].format(name))
 
 
-
 @bot.command('saves', aliases=['saved', 'getsaves', 'savedvideos', 'savedvids'])
 async def saves(ctx: Context):
-    "Показать список сохраненных видео"
+    """Показать список сохраненных видео"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     _saves = guild.get_yt_saves()
@@ -479,11 +458,10 @@ async def saves(ctx: Context):
     ))
 
 
-
 @bot.command('clearsaves', aliases=['clearsave', 'clearsaved',
                                     'clearsavedvideos', 'clearsavedvids'])
 async def clearsaves(ctx: Context):
-    "Очистить список сохраненных видео"
+    """Очистить список сохраненных видео"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     saves_len = len(guild.get_yt_saves())
@@ -494,15 +472,14 @@ async def clearsaves(ctx: Context):
     await ctx.send(guild.lang['result.saved_videos_cleared'].format(saves_len))
 
 
-
 @bot.command('delsave', aliases=['unsave', 'remsave', 'deletevideo',
                                  'deletevid', 'deletesave', 'deletesaved',
                                  'deletesavedvideo', 'deletesavedvid'])
 async def delsave(
-    ctx: Context,
-    name: str = parameter(description='Код-название видео (без пробелов)')
+        ctx: Context,
+        name: str = parameter(description='Код-название видео (без пробелов)')
 ):
-    "Удалить сохраненное видео"
+    """Удалить сохраненное видео"""
 
     guild = GuildData.get_instance(ctx.guild.id)
     _saves = guild.get_yt_saves()
@@ -517,13 +494,12 @@ async def delsave(
     await ctx.send(guild.lang['result.video_deleted'].format(name))
 
 
-
 @bot.command('playsaved', aliases=['playsave', 'ps'])
 async def playsaved(
-    ctx: Context,
-    name: str = parameter(description='Код-название видео (без пробелов)')
+        ctx: Context,
+        name: str = parameter(description='Код-название видео (без пробелов)')
 ):
-    "Воспроизвести сохраненное видео"
+    """Воспроизвести сохраненное видео"""
 
     # Подключиться к каналу
     if ctx.voice_client is None:
@@ -546,13 +522,12 @@ async def playsaved(
     await ctx.send(guild.lang['result.video_playing'].format(video.title))
 
 
-
 @bot.command('replaysaved', aliases=['replaysave', 'rs'])
 async def replaysaved(
-    ctx: Context,
-    name: str = parameter(description='Код-название видео (без пробелов)')
+        ctx: Context,
+        name: str = parameter(description='Код-название видео (без пробелов)')
 ):
-    "Включить автовоспроизведение сохраненного видео"
+    """Включить автовоспроизведение сохраненного видео"""
 
     # Подключиться к каналу
     if ctx.voice_client is None:

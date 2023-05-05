@@ -6,9 +6,8 @@ from discord import VoiceState, VoiceChannel, VoiceClient, User
 from discord.ext.commands import Bot
 
 
-
 def is_users_in_channel(channel: VoiceChannel):
-    "Проверить, есть ли в голосовом канале пользователи. Боты не учитываются."
+    """Проверить, есть ли в голосовом канале пользователи. Боты не учитываются."""
 
     for member in channel.members:
         if not member.bot:
@@ -17,9 +16,8 @@ def is_users_in_channel(channel: VoiceChannel):
     return False
 
 
-
 def is_connected(bot: Bot, channel: VoiceChannel):
-    "Проверить, подключён ли бот к голосовому каналу"
+    """Проверить, подключён ли бот к голосовому каналу"""
 
     for member in channel.members:
         if member.id == bot.user.id:
@@ -28,9 +26,8 @@ def is_connected(bot: Bot, channel: VoiceChannel):
     return False
 
 
-
 def get_bot_channel(bot: Bot, *states: VoiceState | None) -> VoiceChannel | None:
-    "Получить голосовой канал, в котором находится бот"
+    """Получить голосовой канал, в котором находится бот"""
 
     for state in states:
         if state is None or state.channel is None:
@@ -42,9 +39,8 @@ def get_bot_channel(bot: Bot, *states: VoiceState | None) -> VoiceChannel | None
     return None
 
 
-
 def is_user_in_bot_channel(voice_client: VoiceClient, user: User) -> bool:
-    "Проверить, находится ли пользователь в голосовом канале бота"
+    """Проверить, находится ли пользователь в голосовом канале бота"""
 
     if voice_client is None or user.voice is None:
         return False

@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 from bot.schemas import Language
 
 
-
 def load_lang_file(path: str) -> Language:
     """
     Загрузить файл .lang
@@ -54,16 +53,14 @@ def load_lang_file(path: str) -> Language:
     return lang
 
 
-
 def unescape_string(escaped_string: str) -> str:
-    "Преобразовать строку с экранированными символами (e.g. \\n) в нормальную строку"
+    """Преобразовать строку с экранированными символами (e.g. \\n) в нормальную строку"""
 
     return literal_eval(f'"{escaped_string}"')
 
 
-
 def is_url(string: str) -> bool:
-    "Проверить, является ли строка ссылкой"
+    """Проверить, является ли строка ссылкой"""
 
     try:
         res = urlparse(string)
