@@ -6,17 +6,18 @@ import os
 import time
 import json
 import sqlite3
+
 from settings import LANGS_DIR
-from .audio import AudioQueue
-from .schemas import SpamState, Language, YoutubeVideo
-from .utils import load_lang_file
+from bot.audio import AudioQueue
+from bot.schemas import SpamState, Language, YoutubeVideo
+from bot.utils import load_lang_file
 
 
 
 def _load_langs(path: str) -> dict[str, Language]:
     "Загрузить языки из указанной директории"
 
-    langs = {}
+    _langs = {}
 
     for file in os.listdir(path):
         # Загружать только файлы .lang
@@ -24,9 +25,9 @@ def _load_langs(path: str) -> dict[str, Language]:
             continue
 
         lang = load_lang_file(f'{path}/{file}')
-        langs[lang.lang_code] = lang
+        _langs[lang.lang_code] = lang
 
-    return langs
+    return _langs
 
 
 
@@ -124,10 +125,10 @@ class GuildData:
     MOVE_CD_S = 0.75
     "Кулдаун перемещения бота между голосовыми каналами (в секундах)"
 
+    database: BotDatabase
+    "База данных для хранения постоянных данных"
     _global_data = {}
     "Глобальный словарь данных серверов"
-    _database: BotDatabase
-    "База данных для хранения постоянных данных"
 
 
     def __init__(self, guild_id: int) -> None:
@@ -137,7 +138,7 @@ class GuildData:
         "Текуший спам"
         self._last_move_timestamp: float = 0
         "Время последнего перемещения бота между голосовыми каналами"
-        self._lang_code: str = self._database.get_guild_lang(guild_id) or os.getenv('DEFAULT_LANG')
+        self._lang_code: str = self.database.get_guild_lang(guild_id) or os.getenv('DEFAULT_LANG')
         "Код языка сервера"
 
 
@@ -152,14 +153,14 @@ class GuildData:
         "Получить экземпляр класса GuildData для сервера с указанным ID"
 
         _guild_id = str(guild_id)
-        gd = GuildData._global_data.get(_guild_id)
+        guild_data = GuildData._global_data.get(_guild_id)
 
         # Зарегистрировать новый экземпляр, если нужно
-        if gd is None:
-            gd = GuildData(guild_id)
-            GuildData._global_data[_guild_id] = gd
+        if guild_data is None:
+            guild_data = GuildData(guild_id)
+            GuildData._global_data[_guild_id] = guild_data
 
-        return gd
+        return guild_data
 
 
     def create_spam(self, message: str, repeats: int, delay: float) -> SpamState:
@@ -171,47 +172,47 @@ class GuildData:
     def make_move(self) -> bool:
         "Зарегистрировать перемещение бота в голосовой канал и вернуть True, если кулдаун прошёл"
 
-        t = time.time()
-        if t - self._last_move_timestamp < GuildData.MOVE_CD_S:
+        cur_timestamp = time.time()
+        if cur_timestamp - self._last_move_timestamp < GuildData.MOVE_CD_S:
             return False
 
-        self._last_move_timestamp = t
+        self._last_move_timestamp = cur_timestamp
         return True
 
 
     def save_yt_video(self, video: YoutubeVideo, name: str) -> dict[str, YoutubeVideo]:
         "Сохранить видео в базу данных"
 
-        saves = self._database.get_guild_yt_saves(self.guild_id)
+        saves = self.database.get_guild_yt_saves(self.guild_id)
         saves[name] = video
 
-        self._database.set_guild_yt_saves(self.guild_id, saves)
+        self.database.set_guild_yt_saves(self.guild_id, saves)
         return saves
 
 
     def get_yt_saves(self) -> dict[str, YoutubeVideo]:
         "Получить список сохранённых видео"
-        return self._database.get_guild_yt_saves(self.guild_id)
+        return self.database.get_guild_yt_saves(self.guild_id)
 
 
     def get_saved_yt_video(self, name: str) -> YoutubeVideo | None:
         "Получить сохранённое видео по имени"
-        return self._database.get_guild_yt_saves(self.guild_id).get(name)
+        return self.database.get_guild_yt_saves(self.guild_id).get(name)
 
 
     def delete_saved_yt_video(self, name: str) -> dict[str, YoutubeVideo]:
         "Удалить сохранённое видео по имени"
 
-        saves = self._database.get_guild_yt_saves(self.guild_id)
+        saves = self.database.get_guild_yt_saves(self.guild_id)
         del saves[name]
 
-        self._database.set_guild_yt_saves(self.guild_id, saves)
+        self.database.set_guild_yt_saves(self.guild_id, saves)
         return saves
 
 
     def clear_yt_saves(self) -> None:
         "Очистить список сохранённых видео"
-        self._database.set_guild_yt_saves(self.guild_id, {})
+        self.database.set_guild_yt_saves(self.guild_id, {})
 
 
     def delete(self):
@@ -229,7 +230,7 @@ class GuildData:
     def lang_code(self, value: str) -> None:
         "Установить код языка сервера"
         self._lang_code = value
-        self._database.set_guild_lang(self.guild_id, value)
+        self.database.set_guild_lang(self.guild_id, value)
 
 
     @property
@@ -244,7 +245,7 @@ database: 'BotDatabase' = BotDatabase('bot-data.sqlite')
 langs: dict[str, Language] = _load_langs(LANGS_DIR)
 "Словарь языков"
 
-GuildData._database = database
+GuildData.database = database
 
 
 

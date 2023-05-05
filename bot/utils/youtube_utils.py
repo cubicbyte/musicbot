@@ -3,9 +3,10 @@
 """
 
 import sponsorblock as sb
+
 from yt_dlp import YoutubeDL
 from settings import YDL_OPTIONS
-from ..schemas import YoutubeVideo
+from bot.schemas import YoutubeVideo
 
 _sb_client = sb.Client()
 
@@ -65,7 +66,7 @@ def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
 
     try:
         return _sb_client.get_skip_segments(video_id)
-    except: #sb.errors.HTTPException:
+    except sb.errors.HTTPException:
         return None
 
 
@@ -74,7 +75,8 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
     """
     Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
 
-    Работает по принципу тримминга частей аудиодорожки, не содержащих сегменты, с последующей конкатенацией.
+    Работает по принципу тримминга частей аудиодорожки,
+    не содержащих сегменты, с последующей конкатенацией.
     """
 
     skipped = len(segments)

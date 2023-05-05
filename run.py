@@ -1,9 +1,14 @@
+"""
+Главный файл бота
+"""
+
 import os
 import logging
-from bot.data import GuildData, AudioQueue
+import bot.commands as _
+
 from settings import bot
+from bot.data import GuildData, AudioQueue
 from bot.utils.discord_utils import is_users_in_channel, get_bot_channel
-from bot import commands
 
 logger = logging.getLogger('bot')
 
@@ -11,6 +16,7 @@ logger = logging.getLogger('bot')
 
 @bot.event
 async def on_ready():
+    'Выполняется при запуске бота'
     logger.info('Bot is ready!')
 
 

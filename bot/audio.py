@@ -4,13 +4,18 @@
 
 from discord import VoiceClient, FFmpegPCMAudio
 from settings import FFMPEG_OPTIONS
-from .schemas import AudioSource, YoutubeVideo
-from .utils import youtube_utils
+from bot.schemas import AudioSource, YoutubeVideo
+from bot.utils import youtube_utils
 
 
 
 class AudioQueue(list):
+    """
+    Очередь музыки
+    """
+
     _global_queue: dict[str, 'AudioQueue'] = {}
+    "Глобальный словарь очередей для всех серверов"
 
 
     @classmethod
@@ -143,13 +148,13 @@ class AudioController:
         return cont
 
 
-    def __init__(self, voice_client: VoiceClient):
+    def __init__(self, voice_client: VoiceClient) -> None:
         self.voice_client = voice_client
         self._loop_running = False
         "Флаг для остановки цикла проигрывания музыки"
 
 
-    def _play_loop(self, error):
+    def _play_loop(self, error: any = None) -> None:
         """
         Рекурсивная функция проигрывания музыки.
 
@@ -186,7 +191,8 @@ class AudioController:
         if isinstance(audio, YoutubeVideo):
             segments = youtube_utils.get_skip_segments(audio.id)
             if segments is not None:
-                ffmpeg_options['options'] += ' ' + youtube_utils.get_ffmpeg_sponsor_filter(segments, audio.duration)
+                opts = youtube_utils.get_ffmpeg_sponsor_filter(segments, audio.duration)
+                ffmpeg_options['options'] += ' ' + opts
 
         self.voice_client.play(
             FFmpegPCMAudio(audio.source_url, **ffmpeg_options),
@@ -198,7 +204,7 @@ class AudioController:
         "Проиграть музыку"
 
         self._loop_running = True
-        self._play_loop(error=None)
+        self._play_loop()
 
 
     def stop(self):

@@ -2,7 +2,6 @@
 Модуль со всеми схемами данных, используемых в боте
 """
 
-import sponsorblock as sb
 from asyncio import sleep
 from dataclasses import dataclass
 
@@ -17,7 +16,7 @@ class Language(dict):
 
     def __init__(
         self,
-        lang: dict[str, str] = {},
+        lang: dict[str, str] | None = None,
         lang_code: str | None = None
     ) -> None:
         """
@@ -25,7 +24,7 @@ class Language(dict):
         :param lang_code: Код языка
         """
 
-        super().__init__(lang)
+        super().__init__(lang or {})
 
         self.lang_code = lang_code
         "Код языка"

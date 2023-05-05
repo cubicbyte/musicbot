@@ -2,11 +2,10 @@
 Модуль с различными вспомогательными функциями
 """
 
-import sponsorblock as sb
 from ast import literal_eval
 from pathlib import Path
 from urllib.parse import urlparse
-from ..schemas import Language
+from bot.schemas import Language
 
 
 
@@ -37,18 +36,18 @@ def load_lang_file(path: str) -> Language:
 
     lang = Language(lang_code=Path(path).stem)
 
-    with open(path, encoding='utf-8') as f:
-        for i, line in enumerate(f):
+    with open(path, encoding='utf-8') as file:
+        for i, line in enumerate(file):
             line = line[:-1]                # Убрать символ переноса строки
-            line = unescape_string(line)    # Преобразовать экранированные символы в нормальные (e.g. \\n -> \n)
+            line = unescape_string(line)    # Деэкранировать строку (e.g. \\n -> \n)
 
             if line == '' or line.startswith('#'):
                 continue
 
             try:
                 key, value = line.split('=', 1)
-            except ValueError:
-                raise SyntaxError(f'invalid line {i + 1} in {path}:\n"{line}"')
+            except ValueError as err:
+                raise SyntaxError(f'invalid line {i + 1} in {path}:\n"{line}"') from err
 
             lang[key] = value
 
@@ -67,8 +66,8 @@ def is_url(string: str) -> bool:
     "Проверить, является ли строка ссылкой"
 
     try:
-        r = urlparse(string)
+        res = urlparse(string)
     except ValueError:
         return False
 
-    return all([r.scheme, r.netloc])
+    return all([res.scheme, res.netloc])
