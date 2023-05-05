@@ -1,49 +1,28 @@
-# 1. Настройка
+# Installing
 
-Для начала нужно настроить бота через файл `.env`:
+> **Note** It is a good idea to use a virtual environment but here I will show an example without it for simplicity
 
-1. Переименуйте файл `.env.example` в `.env`
-2. Заполните необходимые поля в файле `.env`
+First, we need to configure the bot via environment variables.
+We will do this using the file `.env`
 
-# 2. Установка
+1. Rename file `.env.example` into `.env`
+2. Fill out the file `.env`
 
-## По-хорошему нужно использовать виртуальное окружение:
-```bash
-# Если не установлен venv
-pip3 install -U --user virtualenv
-
-# Создание виртуального окружения
-python -m venv ./venv
-```
-
-Активация виртуального окружения
-
-```bash
-# Windows
-.\venv\Scripts\activate
-
-# Linux
-source ./venv/bin/activate
-```
-
-## Установка зависимостей
+Then, we need to install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-# 3. Запуск
-С виртуальным окружением:
-```bash
-# Windows
-.\venv\Scripts\activate | python run.py
+Now everything is ready and we can launch the bot!
 
-# Linux
-source venv/bin/activate && python run.py
-```
-
-Без виртуального окружения:
 ```bash
 python3 run.py
 ```
 
-> **Warning** Если вы не используете venv, то вам необходимо добавить папку "**[python_dir]\Scripts**" в **PATH**
+> **Warning** If you see this error when trying to play something:
+> 
+> `ClientException: static_ffmpeg was not found.`
+> 
+> Then you need to add folder "**[python_dir]\Scripts**" into the **PATH**,
+> or just install ffmpeg manually and change **FFMPEG_OPTIONS "executable"** to **"ffmpeg"**
+> in the `settings.py` file
