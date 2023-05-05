@@ -116,7 +116,7 @@ class YoutubeVideo(AudioSource):
             author=vid_info.get('uploader'),
             description=vid_info.get('description'),
             duration=vid_info.get('duration'),
-            duration_str=vid_info.get('duration_str'),
+            duration_str=vid_info.get('duration_string'),
             thumbnail=vid_info.get('thumbnail'),
         )
 
