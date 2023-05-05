@@ -19,7 +19,8 @@ LANGS_DIR = os.path.join(sys.path[0], 'langs')
 
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-    'executable': 'static_ffmpeg'
+    'executable': 'static_ffmpeg',
+    'options': '-bufsize 16M',
 }
 
 YDL_OPTIONS = {
