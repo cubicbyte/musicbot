@@ -1,5 +1,5 @@
 # Библиотеки
-discord.py==2.2.2
+discord.py==2.2.3
 yt-dlp==2023.3.4
 sponsorblock.py==0.2.2
 
