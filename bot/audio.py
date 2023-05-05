@@ -40,6 +40,8 @@ class AudioQueue(list):
             del cls._global_queue[_guild_id]
 
     def __init__(self, guild_id: int) -> None:
+        super().__init__()
+
         self.guild_id: int = guild_id
         "ID сервера"
         self.on_replay: bool = False

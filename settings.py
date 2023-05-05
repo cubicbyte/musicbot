@@ -12,8 +12,8 @@ from discord.flags import Intents
 
 
 # Загрузка переменных окружения (конфиг бота)
-load_dotenv()       # Из файла .env в папке бота
-load_dotenv('.env') # Из файла .env в папке, откуда был запущен бот
+load_dotenv()        # Из файла .env в папке бота
+load_dotenv('.env')  # Из файла .env в папке, откуда был запущен бот
 
 LANGS_DIR = os.path.join(sys.path[0], 'langs')
 
