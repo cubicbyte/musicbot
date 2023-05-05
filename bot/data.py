@@ -3,6 +3,7 @@
 """
 
 import os
+import pathlib
 import time
 import json
 import sqlite3
@@ -12,6 +13,9 @@ from bot.audio import AudioQueue
 from bot.schemas import SpamState, Language, YoutubeVideo
 from bot.utils import load_lang_file
 
+LANG_FILE_EXT_WHITELIST = ['.yaml', '.yml']
+"Белый список расширений файлов локализации, которые будут загружаться"
+
 
 def _load_langs(path: str) -> dict[str, Language]:
     """Загрузить языки из указанной директории"""
@@ -19,8 +23,9 @@ def _load_langs(path: str) -> dict[str, Language]:
     _langs = {}
 
     for file in os.listdir(path):
-        # Загружать только файлы .lang
-        if not file.endswith('.lang'):
+        file_ext = pathlib.Path(file).suffix
+
+        if file_ext not in LANG_FILE_EXT_WHITELIST:
             continue
 
         lang = load_lang_file(f'{path}/{file}')

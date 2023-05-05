@@ -79,9 +79,9 @@ async def spam(
 
     # Валидация аргументов
     if count < 1 or count > 100:
-        return await ctx.send(guild.lang['error.args.spam.count'])
+        return await ctx.send(guild.lang['error.args.spam_count'])
     if delay < 0.5 or delay > 60:
-        return await ctx.send(guild.lang['error.args.spam.delay'])
+        return await ctx.send(guild.lang['error.args.spam_delay'])
 
     _spam = GuildData.get_instance(ctx.guild.id).create_spam(text, count, delay)
 
@@ -325,7 +325,7 @@ async def queue(ctx: Context):
 
     # Ошибка, если очередь пуста
     if len(guild.queue) == 0 and guild.queue.current is None:
-        return await ctx.send(guild.lang['result.queue.empty'])
+        return await ctx.send(guild.lang['result.queue_empty'])
 
     # Отправить сообщение
     await ctx.send(guild.lang['result.queue'].format(

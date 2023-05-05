@@ -15,16 +15,16 @@ class Language(dict):
     def __init__(
             self,
             lang: dict[str, str] | None = None,
-            lang_code: str | None = None
+            code: str | None = None
     ) -> None:
         """
         :param lang: Языковой словарь
-        :param lang_code: Код языка
+        :param code: Код языка
         """
 
         super().__init__(lang or {})
 
-        self.lang_code = lang_code
+        self.lang_code = code
         "Код языка"
 
     def __str__(self) -> str | None:

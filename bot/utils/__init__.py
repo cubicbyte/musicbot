@@ -5,50 +5,38 @@
 from ast import literal_eval
 from pathlib import Path
 from urllib.parse import urlparse
+
+import flatdict
+import yaml
+
 from bot.schemas import Language
 
 
 def load_lang_file(path: str) -> Language:
     """
-    Загрузить файл .lang
+    Загрузить лакализационный файл в формате YAML
 
     ### Пример использования::
 
-        >>> lang = load_lang_file('langs/ru.lang')
+        >>> lang = load_lang_file('langs/ru.yaml')
         >>> print(lang['hello_world'])
         ... # Привет, мир!
         >>> print(lang['unexisting_key'])
         ... # unexisting_key (потому что ключа нет в словаре)
 
-    ### Формат файла::
-
-        # Комментарий
-        # Комментарий с символом # внутри
-
-        # Пустая строка выше ^
-        hello_world=Привет, мир!
-        error.something_went_wrong=Что-то пошло не так
-        любой ключ перед знаком равно=любое значение с любыми символами
-
     :param path: Путь к файлу
     """
 
-    lang = Language(lang_code=Path(path).stem)
+    lang_code = Path(path).stem
 
-    with open(path, encoding='utf-8') as file:
-        for i, line in enumerate(file):
-            line = line[:-1]                # Убрать символ переноса строки
-            line = unescape_string(line)    # Деэкранировать строку (e.g. \\n -> \n)
+    with open(path, encoding='utf-8') as f:
+        try:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            data_flat = flatdict.FlatDict(data, delimiter='.')
+        except (yaml.YAMLError, TypeError) as e:
+            raise SyntaxError('Неверный формат файла локализации: %s' % lang_code) from e
 
-            if line == '' or line.startswith('#'):
-                continue
-
-            try:
-                key, value = line.split('=', 1)
-            except ValueError as err:
-                raise SyntaxError(f'invalid line {i + 1} in {path}:\n"{line}"') from err
-
-            lang[key] = value
+    lang = Language(lang=data_flat, code=lang_code)
 
     return lang
 
