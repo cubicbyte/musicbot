@@ -1,11 +1,11 @@
 # Библиотеки
-discord.py==2.2.3
-yt-dlp==2023.3.4
-sponsorblock.py==0.2.2
+discord.py==2.3.2
+yt-dlp==2023.11.16
+sponsorblock.py==0.2.3
 
 # Утилиты
 PyNaCl==1.5.0 # В душе не помню зачем, вроде yt-dlp требовала
 python-dotenv==1.0.0
 static-ffmpeg==2.5
-PyYAML==6.0
+PyYAML==6.0.1
 flatdict==4.0.1
