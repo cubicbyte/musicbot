@@ -78,12 +78,15 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
     skipped = len(segments)
     filter_complex = ''
 
+    count_of_segments = 0
+
     # Включить промежуток между началом видео и первым сегментом
     start = 0
     end = segments[0].start
     if end - start > 1:
         filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a0];"
         skipped += 1
+        count_of_segments += 1
 
     # Включить промежутки между остальными сегментами
     for i, segment in enumerate(segments):
@@ -98,10 +101,10 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
             skipped -= 1
             continue
 
-        segment_i = i + 1 - (len(segments) - skipped)
-        filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{segment_i}];"
+        filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{count_of_segments}];"
+        count_of_segments += 1
 
-    for i in range(1, skipped + 1):
+    for i in range(count_of_segments):
         filter_complex += f"[a{i}]"
 
     filter_complex += f"concat=n={skipped}:v=0:a=1[outa]"
