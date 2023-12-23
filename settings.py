@@ -1,5 +1,5 @@
 """
-Модуль со всеми настройками и глобальными переменными
+Module with all settings and global variables
 """
 
 import os
@@ -11,9 +11,9 @@ from discord.ext import commands
 from discord.flags import Intents
 
 
-# Загрузка переменных окружения (конфиг бота)
-load_dotenv()        # Из файла .env в папке бота
-load_dotenv('.env')  # Из файла .env в папке, откуда был запущен бот
+# Load environment variables (bot config)
+load_dotenv()        # From .env file in project root
+load_dotenv('.env')  # From .env file in current directory
 
 LANGS_DIR = os.path.join(sys.path[0], 'langs')
 
@@ -36,13 +36,13 @@ os.environ.setdefault('LOG_FILEPATH', 'debug.log')
 os.environ.setdefault('LOG_LEVEL', 'INFO')
 os.environ.setdefault('LOG_FORMAT', logging.BASIC_FORMAT)
 
-# Проверка параметров
-_ENV_HELP = 'Пожалуйста, прочитайте README.md, чтобы узнать, как настроить бота.'
-assert os.getenv('BOT_TOKEN') is not None, 'BOT_TOKEN не указан. ' + _ENV_HELP
-assert os.getenv('SAVES_LIMIT').isdigit(), 'SAVES_LIMIT должен быть числом. ' + _ENV_HELP
+# Check environment variables
+_ENV_HELP = 'Please read README.md to learn how to configure bot.'
+assert os.getenv('BOT_TOKEN') is not None, 'BOT_TOKEN not specified. ' + _ENV_HELP
+assert os.getenv('SAVES_LIMIT').isdigit(), 'SAVES_LIMIT should be integer. ' + _ENV_HELP
 
 
-# Создание папки логов
+# Setup logging
 os.makedirs(os.path.dirname(os.path.join('.', os.getenv('LOG_FILEPATH'))), exist_ok=True)
 
 logging.basicConfig(

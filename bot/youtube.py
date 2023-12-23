@@ -1,5 +1,5 @@
 """
-Модуль для работы с YouTube
+Module for working with YouTube, like searching videos, getting audio from videos, etc.
 """
 
 import sponsorblock as sb
@@ -13,14 +13,14 @@ _sb_client = sb.Client()
 
 def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
     """
-    Возвращает список `YoutubeVideo` из ссылки или поискового запроса.
+    Returns list of `YoutubeVideo` from link or search query.
 
-    Если передана ссылка на плейлист, то возвращается список всех видео из плейлиста,
-    иначе возвращается список с одним видео.
+    If link to playlist is passed, then returns list of all videos from playlist,
+    else returns list with one video.
 
-    :param url_or_search: Ссылка на видео или поисковый запрос
+    :param url_or_search: Link to video or search query
 
-    :return: Список `YoutubeVideo`
+    :returns: List of `YoutubeVideo`
     """
 
     ydl_res = search_youtube(url_or_search)
@@ -38,12 +38,11 @@ def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
 
 def search_youtube(url_or_search: str) -> dict[str, any]:
     """
-    Получить информацию о видео с YouTube.
+    Get information about video from YouTube.
 
-    :return: Результат `YoutubeDL().extract_info`
+    :return: Result of `YoutubeDL().extract_info`
     """
 
-    # Получаем информацию о видео
     with YoutubeDL(YDL_OPTIONS) as ydl:
         ydl_res = ydl.extract_info(url_or_search, download=False)
 
@@ -52,13 +51,13 @@ def search_youtube(url_or_search: str) -> dict[str, any]:
 
 def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
     """
-    Получить сегменты для пропуска из видео с помощью SponsorBlock.
+    Get segments to skip from video using SponsorBlock.
 
-    Используется для пропуска спонсорских вставок, интро и т.д.
+    Used to skip sponsor inserts, intros, etc.
 
-    :param video_id: ID видео
+    :param video_id: Youtube video ID (/watch?v=...)
 
-    :return: Список сегментов
+    :return: List of segments
     """
 
     try:
@@ -69,36 +68,31 @@ def get_skip_segments(video_id: str) -> list[sb.Segment] | None:
 
 def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -> str:
     """
-    Получить аргументы ffmpeg для удаления сегментов SponsorBlock из видео.
+    Get ffmpeg arguments for removing SponsorBlock segments from video.
 
-    Работает по принципу тримминга частей аудиодорожки,
-    не содержащих сегменты, с последующей конкатенацией.
+    Works by trimming parts of audio track that do not contain segments,
+    with subsequent concatenation.
     """
 
-    skipped = len(segments)
     filter_complex = ''
-
     count_of_segments = 0
 
-    # Включить промежуток между началом видео и первым сегментом
+    # Include interval between video start and first segment
     start = 0
     end = segments[0].start
     if end - start > 1:
         filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a0];"
-        skipped += 1
         count_of_segments += 1
 
-    # Включить промежутки между остальными сегментами
+    # Include intervals between other segments
     for i, segment in enumerate(segments):
-
-        # Определить начало и конец обрезки видео
+        # Determine start and end of video trimming
         next_segment = segments[i + 1] if i + 1 < len(segments) else None
         start = segment.end
         end = next_segment.start if next_segment else vid_duration_s
 
-        # Если промежуток слишком маленький, то пропустить его
+        # If interval is too small, then skip it
         if end - start < 1 and len(segments) > 1:
-            skipped -= 1
             continue
 
         filter_complex += f"[0:a]atrim={start}:{end},asetpts=PTS-STARTPTS[a{count_of_segments}];"
@@ -107,6 +101,6 @@ def get_ffmpeg_sponsor_filter(segments: list[sb.Segment], vid_duration_s: int) -
     for i in range(count_of_segments):
         filter_complex += f"[a{i}]"
 
-    filter_complex += f"concat=n={skipped}:v=0:a=1[outa]"
+    filter_complex += f"concat=n={count_of_segments}:v=0:a=1[outa]"
 
     return f'-filter_complex "{filter_complex}" -map "[outa]"'

@@ -1,5 +1,5 @@
 """
-Модуль с различными вспомогательными функциями
+Module with various helper functions
 """
 
 from ast import literal_eval
@@ -14,17 +14,17 @@ from bot.schemas import Language
 
 def load_lang_file(path: str) -> Language:
     """
-    Загрузить лакализационный файл в формате YAML
+    Load localization file in YAML format
 
-    ### Пример использования::
+    ### Usage example::
 
-        >>> lang = load_lang_file('langs/ru.yaml')
+        >>> lang = load_lang_file('langs/en.yaml')
         >>> print(lang['hello_world'])
-        ... # Привет, мир!
+        ... # Hello, world!
         >>> print(lang['unexisting_key'])
-        ... # unexisting_key (потому что ключа нет в словаре)
+        ... # unexisting_key (because key doesn't exist in dictionary)
 
-    :param path: Путь к файлу
+    :param path: Path to file
     """
 
     lang_code = Path(path).stem
@@ -34,7 +34,7 @@ def load_lang_file(path: str) -> Language:
             data = yaml.load(f, Loader=yaml.FullLoader)
             data_flat = flatdict.FlatDict(data, delimiter='.')
         except (yaml.YAMLError, TypeError) as e:
-            raise SyntaxError('Неверный формат файла локализации: %s' % lang_code) from e
+            raise SyntaxError('Invalid localization file format: %s' % lang_code) from e
 
     lang = Language(lang=data_flat, code=lang_code)
 
@@ -42,13 +42,13 @@ def load_lang_file(path: str) -> Language:
 
 
 def unescape_string(escaped_string: str) -> str:
-    """Преобразовать строку с экранированными символами (e.g. \\n) в нормальную строку"""
+    """Convert string with escaped characters (e.g. \\n) to normal string"""
 
     return literal_eval(f'"{escaped_string}"')
 
 
 def is_url(string: str) -> bool:
-    """Проверить, является ли строка ссылкой"""
+    """Check if string is URL"""
 
     try:
         res = urlparse(string)

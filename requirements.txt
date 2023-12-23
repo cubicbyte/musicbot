@@ -1,10 +1,10 @@
-# Библиотеки
+# Libraries
 discord.py==2.3.2
 yt-dlp==2023.11.16
 sponsorblock.py==0.2.3
 
-# Утилиты
-PyNaCl==1.5.0 # В душе не помню зачем, вроде yt-dlp требовала
+# Utilities
+PyNaCl==1.5.0 # Needed for discord.py to work. Can cause pip installation to fail on some systems.
 python-dotenv==1.0.0
 static-ffmpeg==2.5
 PyYAML==6.0.1

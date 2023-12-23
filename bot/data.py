@@ -1,5 +1,5 @@
 """
-Модуль для работы с различными данными
+Module for working with data
 """
 
 import os
@@ -14,11 +14,11 @@ from bot.schemas import SpamState, Language, YoutubeVideo
 from bot.utils import load_lang_file
 
 LANG_FILE_EXT_WHITELIST = ['.yaml', '.yml']
-"Белый список расширений файлов локализации, которые будут загружаться"
+"Whitelist of localization file extensions that will be loaded"
 
 
 def _load_langs(path: str) -> dict[str, Language]:
-    """Загрузить языки из указанной директории"""
+    """Load languages from specified directory"""
 
     _langs = {}
 
@@ -35,7 +35,11 @@ def _load_langs(path: str) -> dict[str, Language]:
 
 
 class BotDatabase:
-    """База данных для хранения постоянной информации"""
+    """
+    Bot database.
+
+    Stores bot language, saved youtube videos and other data
+    """
 
     def __init__(self, path: str) -> None:
         self._db = sqlite3.connect(path, check_same_thread=False)
@@ -43,7 +47,7 @@ class BotDatabase:
         self._init_db()
 
     def _init_db(self):
-        """Инициализировать базу данных"""
+        """Initialize database"""
 
         self._db.execute('''
             CREATE TABLE IF NOT EXISTS guilds (
@@ -57,10 +61,10 @@ class BotDatabase:
     @staticmethod
     def _saves_deserializer(_dict: dict) -> dict[str, YoutubeVideo]:
         """
-        Десериализатор для сохранённых песен
+        Deserializer for saved songs
 
-        Короче штука, которая парсит песни с базы данных, сохранённые в формате json,
-        и преобразует их в читаемый для программы формат
+        Basically, it parses songs from database saved in json format
+        and converts them to readable format for program
         """
 
         if 'title' in _dict:
@@ -69,7 +73,7 @@ class BotDatabase:
         return _dict
 
     def _get_field(self, guild_id: int, field: str) -> str | None:
-        """Получить значение поля из таблицы по ключу"""
+        """Get field value from database by key"""
 
         row = self._db.execute(
             f'SELECT {field} FROM guilds WHERE guild_id = ?',
@@ -81,7 +85,7 @@ class BotDatabase:
         return row[field]
 
     def _set_field(self, guild_id: int, field: str, value: any) -> None:
-        """Установить значение поля в таблице по ключу"""
+        """Set field value in database by key"""
 
         self._db.execute(
             f'INSERT OR REPLACE INTO guilds (guild_id, {field}) VALUES (?, ?)',
@@ -90,15 +94,15 @@ class BotDatabase:
         self._db.commit()
 
     def get_guild_lang(self, guild_id: int) -> str | None:
-        """Получить язык сервера"""
+        """Get guild language"""
         return self._get_field(guild_id, 'lang_code')
 
     def set_guild_lang(self, guild_id: int, lang_code: str) -> None:
-        """Установить язык сервера"""
+        """Set guild language"""
         self._set_field(guild_id, 'lang_code', lang_code)
 
     def get_guild_yt_saves(self, guild_id: int) -> dict[str, YoutubeVideo]:
-        """Получить список сохранённых песен"""
+        """Get saved songs list"""
 
         res = self._get_field(guild_id, 'saves')
         if res is None:
@@ -108,45 +112,45 @@ class BotDatabase:
         return saves
 
     def set_guild_yt_saves(self, guild_id: int, saves: dict[str, YoutubeVideo]) -> None:
-        """Установить список сохранённых песен"""
+        """Set saved songs list"""
         json_str = json.dumps(saves, default=lambda o: o.__dict__)
         self._set_field(guild_id, 'saves', json_str)
 
 
 class GuildData:
-    """Данные сервера"""
+    """Data for server"""
 
     MOVE_CD_S = 0.75
-    "Кулдаун перемещения бота между голосовыми каналами (в секундах)"
+    "Cooldown for bot move between voice channels (in seconds)"
 
     database: BotDatabase
-    "База данных для хранения постоянных данных"
+    "Bot database"
     _global_data = {}
-    "Глобальный словарь данных серверов"
+    "Global data mapping for all servers"
 
     def __init__(self, guild_id: int) -> None:
         self.guild_id = guild_id
-        "ID сервера"
+        "Server ID"
         self.spam: SpamState | None = None
-        "Текуший спам"
+        "Current spam state"
         self._last_move_timestamp: float = 0
-        "Время последнего перемещения бота между голосовыми каналами"
+        "Timestamp of last bot move"
         self._lang_code: str = self.database.get_guild_lang(guild_id) or os.getenv('DEFAULT_LANG')
-        "Код языка сервера"
+        "Server language code"
 
     @property
     def queue(self) -> AudioQueue:
-        """Очередь музыки"""
+        """Audio queue for server"""
         return AudioQueue.get_queue(self.guild_id)
 
     @staticmethod
     def get_instance(guild_id: int) -> 'GuildData':
-        """Получить экземпляр класса GuildData для сервера с указанным ID"""
+        """Get GuildData instance for server with specified ID"""
 
         _guild_id = str(guild_id)
         guild_data = GuildData._global_data.get(_guild_id)
 
-        # Зарегистрировать новый экземпляр, если нужно
+        # Register new instance if needed
         if guild_data is None:
             guild_data = GuildData(guild_id)
             GuildData._global_data[_guild_id] = guild_data
@@ -154,12 +158,12 @@ class GuildData:
         return guild_data
 
     def create_spam(self, message: str, repeats: int, delay: float) -> SpamState:
-        """Зарегистрировать новый экземпляр класса `SpamState`"""
+        """Create new `SpamState` instance"""
         self.spam = SpamState(message, repeats, delay)
         return self.spam
 
     def make_move(self) -> bool:
-        """Зарегистрировать перемещение бота в голосовой канал и вернуть True, если кулдаун прошёл"""
+        """Register bot move to voice channel and return True if cooldown passed"""
 
         cur_timestamp = time.time()
         if cur_timestamp - self._last_move_timestamp < GuildData.MOVE_CD_S:
@@ -169,7 +173,7 @@ class GuildData:
         return True
 
     def save_yt_video(self, video: YoutubeVideo, name: str) -> dict[str, YoutubeVideo]:
-        """Сохранить видео в базу данных"""
+        """Save video to database"""
 
         saves = self.database.get_guild_yt_saves(self.guild_id)
         saves[name] = video
@@ -178,15 +182,15 @@ class GuildData:
         return saves
 
     def get_yt_saves(self) -> dict[str, YoutubeVideo]:
-        """Получить список сохранённых видео"""
+        """Get saved videos list"""
         return self.database.get_guild_yt_saves(self.guild_id)
 
     def get_saved_yt_video(self, name: str) -> YoutubeVideo | None:
-        """Получить сохранённое видео по имени"""
+        """Get saved video by name"""
         return self.database.get_guild_yt_saves(self.guild_id).get(name)
 
     def delete_saved_yt_video(self, name: str) -> dict[str, YoutubeVideo]:
-        """Удалить сохранённое видео по имени"""
+        """Delete saved video by name"""
 
         saves = self.database.get_guild_yt_saves(self.guild_id)
         del saves[name]
@@ -195,38 +199,37 @@ class GuildData:
         return saves
 
     def clear_yt_saves(self) -> None:
-        """Очистить список сохранённых видео"""
+        """Clear saved videos list"""
         self.database.set_guild_yt_saves(self.guild_id, {})
 
     def delete(self):
-        """Удалить данные сервера"""
+        """Delete GuildData instance"""
         self.queue.delete()
 
     @property
     def lang_code(self) -> str:
-        """Код языка сервера"""
+        """Server language code"""
         return self._lang_code
 
     @lang_code.setter
     def lang_code(self, value: str) -> None:
-        """Установить код языка сервера"""
         self._lang_code = value
         self.database.set_guild_lang(self.guild_id, value)
 
     @property
     def lang(self) -> Language:
-        """Язык сервера"""
+        """Server language"""
         return langs[self._lang_code]
 
 
 database: 'BotDatabase' = BotDatabase('bot-data.sqlite')
-"База данных для хранения постоянной информации"
+"Bot database"
 langs: dict[str, Language] = _load_langs(LANGS_DIR)
-"Словарь языков"
+"Loaded languages"
 
 GuildData.database = database
 
 
-# Проверка верность языка по умолчанию
+# Check default language validity
 assert os.getenv('DEFAULT_LANG') in langs, (
-    f'Поле DEFAULT_LANG в файле .env имеет несуществующий язык: {os.getenv("DEFAULT_LANG")}. Список доступных языков: ({", ".join(langs.keys())})')
+    f'Field DEFAULT_LANG in .env file has invalid language: {os.getenv("DEFAULT_LANG")}. Available languages: ({", ".join(langs.keys())})')

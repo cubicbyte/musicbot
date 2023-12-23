@@ -1,5 +1,5 @@
 """
-Модуль со всеми схемами данных, используемых в боте
+Module with all data schemas used in bot
 """
 
 from asyncio import sleep
@@ -8,8 +8,9 @@ from dataclasses import dataclass
 
 class Language(dict):
     """
-    Обёртка вокруг языкового словаря.\n
-    При отсутствии ключа в словаре возвращает сам ключ, имеет свойство `lang_code`.
+    Language dictionary wrapper.
+
+    Returns key if it's not in dictionary, has `lang_code` property.
     """
 
     def __init__(
@@ -18,14 +19,14 @@ class Language(dict):
             code: str | None = None
     ) -> None:
         """
-        :param lang: Языковой словарь
-        :param code: Код языка
+        :param lang: Language dictionary
+        :param code: Language code
         """
 
         super().__init__(lang or {})
 
         self.lang_code = code
-        "Код языка"
+        "Language code"
 
     def __str__(self) -> str | None:
         return self.lang_code
@@ -39,24 +40,24 @@ class Language(dict):
 
 @dataclass
 class SpamState:
-    """Состояние спама.
+    """Spam state class.
 
-    >>> spam = SpamState('@nazar067 зайди в канал', 20, 0.5)
+    >>> spam = SpamState('@nazar067 join vc', 20, 0.5)
     >>> async for text in spam:
     ...     await ctx.send(text)
     """
 
     text: str
-    "Текст спама"
+    "Text to spam"
     repeats: int
-    "Количество повторений"
+    "Repeat count"
     delay: float
-    "Задержка между повторениями в секундах"
+    "Delay between messages in seconds"
     progress: int = 0
-    "Текущий прогресс"
+    "Current progress"
 
     async def __aiter__(self):
-        """Асинхронный итератор для спама.
+        """Async iterator for spam state.
 
         >>> async for _ in spam:
         ...     # do something
@@ -70,43 +71,43 @@ class SpamState:
             await sleep(self.delay)
 
     def stop(self):
-        """Остановить спам"""
+        """Stop spamming"""
 
         self.progress = self.repeats
 
 
 @dataclass
 class AudioSource:
-    """Класс для хранения информации о аудио-файле."""
+    """Base class for audio sources."""
 
     source_url: str
-    "Прямая ссылка на файл с аудиодорожкой"
+    "Direct link to audio file, playble by `discord.FFmpegPCMAudio`"
 
 
 @dataclass
 class YoutubeVideo(AudioSource):
-    """Класс для хранения информации о видео."""
+    """Class for storing information about youtube video."""
 
     origin_query: str
-    "Оригинальный запрос поиска"
+    "Original search query"
     id: str
-    "ID видео (https://www.youtube.com/watch?v= `tPEE9ZwTmy0`)"
+    "Video ID (https://www.youtube.com/watch?v= `tPEE9ZwTmy0`)"
     title: str
-    "Название видео"
+    "Video title"
     author: str
-    "Автор видео"
+    "Video author"
     description: str
-    "Описание видео"
+    "Video description"
     duration: int
-    "Длительность видео в секундах"
+    "Video duration in seconds"
     duration_str: str
-    "Длительность видео в формате `ММ:СС` / `ЧЧ:ММ:СС` / `ДД:ЧЧ:ММ:СС`"
+    "Video duration in format `MM:SS` / `HH:MM:SS` / `DD:HH:MM:SS`"
     thumbnail: str
-    "Ссылка на превью видео"
+    "Link to video thumbnail"
 
     @staticmethod
     def extract_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
-        """Извлечь информацию о видео из словаря `YoutubeDL.extract_info`"""
+        """Extract video information from `YoutubeDL.extract_info` dictionary"""
 
         return dict(
             source_url=vid_info.get('url'),
@@ -122,5 +123,5 @@ class YoutubeVideo(AudioSource):
 
     @property
     def url(self) -> str:
-        """Ссылка на видео"""
+        """Video URL"""
         return f'https://www.youtube.com/watch?v={self.id}'

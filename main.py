@@ -1,7 +1,3 @@
-"""
-Главный файл бота
-"""
-
 import os
 import logging
 import bot.commands as _
@@ -15,15 +11,15 @@ logger = logging.getLogger('bot')
 
 @bot.event
 async def on_ready():
-    """Выполняется при запуске бота"""
+    """Runs when bot is ready"""
     logger.info('Bot is ready!')
 
 
 @bot.event
 async def on_voice_state_update(member, before, after):
     """
-    Ливнуть с канала, если в нём никого не осталось,\n
-    или перейти в канал пользователя, если он сменил канал, и бот остался один.
+    Leave channel if it's empty, or move to user channel
+    if he changed channel and bot is alone.
     """
 
     if member.bot:
@@ -31,25 +27,25 @@ async def on_voice_state_update(member, before, after):
 
     ch = get_bot_channel(bot, before, after)
 
-    # Игнорировать, если это не касается канала бота
+    # Ignore if it's not bot channel
     if ch is None:
         return
 
-    # Игнорировать, если в канале есть пользователи
+    # Ignore if bot channel has users
     if is_users_in_channel(ch):
         return
 
-    # Перейти в канал пользователя, если он его сменил
+    # Go to user channel if he changed channel
     if after is not None and after.channel is not None:
         if after.channel.id == ch.id:
             return
         if GuildData.get_instance(ch.guild.id).make_move():
             await ch.guild.voice_client.move_to(after.channel)
 
-    # Ливнуть с канала
+    # Leave channel
     else:
-        # Защита от случайного отключения человека от канала
-        # Если пользователь в течении 750мс не вернётся в канал, то бот отключится
+        # Protection from accidental channel disconnect
+        # Bot will disconnect if user will not return to channel in 750ms
         # await sleep(0.75)
         # if not is_users_in_channel(ch):
         await ch.guild.voice_client.disconnect()

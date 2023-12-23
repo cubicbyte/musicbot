@@ -16,7 +16,7 @@ pip install -r requirements.txt
 Now everything is ready and we can launch the bot!
 
 ```bash
-python3 run.py
+python3 main.py
 ```
 
 > **Warning** If you see this error when trying to play something:
