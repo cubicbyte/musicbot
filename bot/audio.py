@@ -170,10 +170,10 @@ class AudioController:
         # Use filter for sponsor segments (SponsorBlock integration)
         if isinstance(audio, YoutubeVideo) and os.getenv('ENABLE_SPONSORBLOCK').lower() == 'true':
             ffmpeg_options.setdefault('options', '')
-            segments = youtube.get_skip_segments(audio.id)
+            segments = ytdlp.get_skip_segments(audio.id)
 
             if segments is not None:
-                opts = youtube.get_ffmpeg_sponsor_filter(segments, audio.duration)
+                opts = ytdlp.get_ffmpeg_sponsor_filter(segments, audio.duration)
                 ffmpeg_options['options'] += ' ' + opts
 
         self.voice_client.play(
