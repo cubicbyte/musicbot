@@ -10,8 +10,7 @@ from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
 
 from settings import bot
-from bot import utils, youtube
-from bot.schemas import YoutubeVideo
+from bot import ytdlp
 from bot.data import GuildData, langs
 from bot.audio import AudioQueue, AudioController
 
@@ -152,7 +151,7 @@ async def play(
     else:
         await voice_client.move_to(channel)
     controller = AudioController.get_controller(voice_client)
-    sources = youtube.process_youtube_search(url_or_search)
+    sources = ytdlp.search(url_or_search)
     controller.play_audio(sources)
 
     # Send another callback message
@@ -190,7 +189,7 @@ async def add(
         voice_client = await channel.connect()
     else:
         await voice_client.move_to(channel)
-    sources = youtube.process_youtube_search(url_or_search)
+    sources = ytdlp.search(url_or_search)
     controller = AudioController.get_controller(voice_client)
     controller.queue.extend(sources)
 
@@ -325,7 +324,7 @@ async def replay(
     await ctx.send(guild.lang['result.searching'])
 
     # Start auto replay
-    sources = youtube.process_youtube_search(url_or_search)
+    sources = ytdlp.search(url_or_search)
     controller = AudioController.get_controller(ctx.voice_client)
     controller.queue.on_replay = True
     controller.play_audio(sources)
@@ -441,7 +440,7 @@ async def save(
 
     # Save video by url or search query
     if url_or_search is not None:
-        videos = youtube.process_youtube_search(url_or_search)
+        videos = ytdlp.search(url_or_search)
 
         guild.save_audio(videos[0], name)
         return await ctx.send(guild.lang['result.video_saved'].format(name))

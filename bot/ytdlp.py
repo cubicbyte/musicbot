@@ -6,39 +6,47 @@ import sponsorblock as sb
 
 from yt_dlp import YoutubeDL
 from settings import YDL_OPTIONS
-from bot.schemas import YoutubeVideo
+from bot.schemas import YoutubeVideo, AudioSource
 
 _sb_client = sb.Client()
 
 
-def process_youtube_search(url_or_search: str) -> list[YoutubeVideo]:
+def search(url_or_search: str) -> list[AudioSource]:
     """
-    Returns list of `YoutubeVideo` from link or search query.
+    Returns list of `AudioSource` from link or search query.
 
     If link to playlist is passed, then returns list of all videos from playlist,
     else returns list with one video.
 
     :param url_or_search: Link to video or search query
 
-    :returns: List of `YoutubeVideo`
+    :returns: List of `AudioSource`
     """
 
-    ydl_res = search_youtube(url_or_search)
+    ydl_res = _search(url_or_search)
     res = []
 
-    if ydl_res.get('_type') == 'playlist':
-        for video in ydl_res['entries']:
-            video['original_url'] = ydl_res.get('original_url')
-            res.append(YoutubeVideo.from_ydl(video))
-    else:
+    # if ydl_res.get('_type') == 'playlist':
+    #     for audio in ydl_res['entries']:
+    #         audio['original_url'] = ydl_res.get('original_url')
+    #         res.append(YoutubeVideo.from_ydl(audio))
+    # else:
+    #     res.append(YoutubeVideo.from_ydl(ydl_res))
+
+    if ydl_res['extractor'] == 'youtube':
         res.append(YoutubeVideo.from_ydl(ydl_res))
+    else:
+        res.append(AudioSource(
+            source_url=ydl_res.get('url'),
+            title=ydl_res.get('title'),
+        ))
 
     return res
 
 
-def search_youtube(url_or_search: str) -> dict[str, any]:
+def _search(url_or_search: str) -> dict[str, any]:
     """
-    Get information about video from YouTube.
+    Get information about audio
 
     :return: Result of `YoutubeDL().extract_info`
     """

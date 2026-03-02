@@ -6,7 +6,7 @@ import os
 
 from discord import VoiceClient, FFmpegPCMAudio
 from settings import FFMPEG_OPTIONS
-from bot import youtube
+from bot import ytdlp
 from bot.schemas import AudioSource, YoutubeVideo
 
 
