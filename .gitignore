@@ -1,8 +1,8 @@
 # User files
-/venv/
-/.env
-/config.py
-/*.code-workspace
+venv/
+.venv/
+.env
+*.code-workspace
 
 # Generated files
 *.sqlite

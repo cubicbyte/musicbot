@@ -57,12 +57,6 @@ else:
         'Alternatively, you can use static-ffmpeg package to include FFmpeg binary with the bot.'
     )
 
-if os.path.exists('cookies.txt'):  # For YouTube age-restricted videos and videos with other restrictions
-    YDL_OPTIONS['cookies'] = 'cookies.txt'
-    _logger.info('Using cookies.txt for YouTube video downloads')
-else:
-    _logger.warning('No cookies.txt found, some YouTube videos may not be playable')
-
 # Check environment variables
 _ENV_HELP = 'Please read README.md to learn how to configure bot.'
 assert os.getenv('BOT_TOKEN') is not None, 'BOT_TOKEN not specified. ' + _ENV_HELP

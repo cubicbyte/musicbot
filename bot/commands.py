@@ -158,8 +158,7 @@ async def play(
     # Send another callback message
     audio = controller.queue.current
     if audio is not None:
-        title = audio.source_url
-        await ctx.send(guild.lang['result.video_playing'].format(title))
+        await ctx.send(guild.lang['result.video_playing'].format(audio.title))
 
 
 @bot.command('add', aliases=['a', '+'])
@@ -198,8 +197,7 @@ async def add(
     # Send another callback message
     if len(controller.queue) != 0:
         video = controller.queue[0]
-        title = '' if utils.is_url(video.origin_query) else video.url
-        await ctx.send(guild.lang['result.video_added'].format(title))
+        await ctx.send(guild.lang['result.video_added'].format(video.title))
 
     # Start playing if queue was empty
     if not voice_client.is_playing():
