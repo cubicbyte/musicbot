@@ -1,5 +1,5 @@
 # Libraries
-discord.py==2.7.1
+discord.py==2.7.0
 yt-dlp==2026.2.21
 sponsorblock.py==0.2.3
 
