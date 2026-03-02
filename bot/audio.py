@@ -2,6 +2,8 @@
 Module for working with audio
 """
 
+import os
+
 from discord import VoiceClient, FFmpegPCMAudio
 from settings import FFMPEG_OPTIONS
 from bot import youtube
@@ -166,7 +168,7 @@ class AudioController:
         ffmpeg_options = FFMPEG_OPTIONS.copy()
 
         # Use filter for sponsor segments (SponsorBlock integration)
-        if isinstance(audio, YoutubeVideo):
+        if isinstance(audio, YoutubeVideo) and os.getenv('ENABLE_SPONSORBLOCK').lower() == 'true':
             ffmpeg_options.setdefault('options', '')
             segments = youtube.get_skip_segments(audio.id)
 

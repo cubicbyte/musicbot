@@ -41,10 +41,10 @@ def load_lang_file(path: str) -> Language:
     return lang
 
 
-def unescape_string(escaped_string: str) -> str:
-    """Convert string with escaped characters (e.g. \\n) to normal string"""
-
-    return literal_eval(f'"{escaped_string}"')
+# def unescape_string(escaped_string: str) -> str:
+#     """Convert string with escaped characters (e.g. \\n) to normal string"""
+#
+#     return literal_eval(f'"{escaped_string}"')
 
 
 def is_url(string: str) -> bool:

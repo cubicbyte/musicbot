@@ -4,6 +4,7 @@ Module for bot commands
 
 import os
 
+import discord.utils
 from datetime import datetime
 from yt_dlp import YoutubeDL
 from discord.ext.commands import Context, parameter
@@ -59,7 +60,7 @@ async def leave(ctx: Context) -> bool:
     if ctx.voice_client is None:
         return False
 
-    await ctx.voice_client.disconnect()
+    await ctx.voice_client.disconnect(force=False)
     AudioQueue.get_queue(ctx.guild.id).delete()
     return True
 
@@ -144,14 +145,20 @@ async def play(
     await ctx.send(guild.lang['result.searching'])
 
     # Start playing
-    controller = AudioController.get_controller(ctx.voice_client)
+    channel = ctx.author.voice.channel
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice_client is None:
+        voice_client = await channel.connect()
+    else:
+        await voice_client.move_to(channel)
+    controller = AudioController.get_controller(voice_client)
     sources = youtube.process_youtube_search(url_or_search)
     controller.play_audio(sources)
 
     # Send another callback message
-    video = controller.queue.current
-    if video is not None:
-        title = '' if utils.is_url(video.origin_query) else video.url
+    audio = controller.queue.current
+    if audio is not None:
+        title = audio.source_url
         await ctx.send(guild.lang['result.video_playing'].format(title))
 
 
@@ -178,8 +185,14 @@ async def add(
     await ctx.send(guild.lang['result.searching'])
 
     # Add video to queue
+    channel = ctx.author.voice.channel
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice_client is None:
+        voice_client = await channel.connect()
+    else:
+        await voice_client.move_to(channel)
     sources = youtube.process_youtube_search(url_or_search)
-    controller = AudioController.get_controller(ctx.voice_client)
+    controller = AudioController.get_controller(voice_client)
     controller.queue.extend(sources)
 
     # Send another callback message
@@ -189,7 +202,7 @@ async def add(
         await ctx.send(guild.lang['result.video_added'].format(title))
 
     # Start playing if queue was empty
-    if not ctx.voice_client.is_playing():
+    if not voice_client.is_playing():
         controller.start()
 
 
@@ -201,13 +214,14 @@ async def skip(
     """Skip current video or audio"""
 
     guild = GuildData.get_instance(ctx.guild.id)
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
 
     # Error if bot is not in voice channel
-    if ctx.voice_client is None:
+    if voice_client is None:
         return await ctx.send(guild.lang['error.not_in_voice_channel'])
 
     # Skip current audio
-    controller = AudioController.get_controller(ctx.voice_client)
+    controller = AudioController.get_controller(voice_client)
     controller.skip(count)
 
     # Send message
@@ -219,9 +233,15 @@ async def stop(ctx: Context):
     """Stop playing and clear queue"""
 
     guild = GuildData.get_instance(ctx.guild.id)
+    channel = ctx.author.voice.channel
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice_client is None:
+        voice_client = await channel.connect()
+    else:
+        await voice_client.move_to(channel)
 
     # If already stopped, send error
-    if not ctx.voice_client.is_playing():
+    if not voice_client.is_playing():
         return await ctx.send(guild.lang['error.not_playing'])
 
     _queue = AudioQueue.get_queue(ctx.guild.id)
@@ -232,7 +252,7 @@ async def stop(ctx: Context):
 
     # Stop playing and clear queue
     _queue.clear()
-    ctx.voice_client.stop()
+    voice_client.stop()
 
     # Send message
     await ctx.send(guild.lang['result.video_stopped'])
@@ -418,14 +438,14 @@ async def save(
     guild = GuildData.get_instance(ctx.guild.id)
 
     # Error, if limit is reached
-    if len(guild.get_yt_saves()) >= int(os.getenv('SAVES_LIMIT')):
+    if len(guild.get_saved_audio()) >= int(os.getenv('SAVES_LIMIT')):
         return await ctx.send(guild.lang['error.saves_limit'])
 
     # Save video by url or search query
     if url_or_search is not None:
         videos = youtube.process_youtube_search(url_or_search)
 
-        guild.save_yt_video(videos[0], name)
+        guild.save_audio(videos[0], name)
         return await ctx.send(guild.lang['result.video_saved'].format(name))
 
     # Save current video
@@ -434,11 +454,7 @@ async def save(
         if guild.queue.current is None:
             return await ctx.send(guild.lang['error.no_current_video'])
 
-        # Error, if current video is not youtube video
-        if not isinstance(guild.queue.current, YoutubeVideo):
-            return await ctx.send(guild.lang['error.not_youtube_video'])
-
-        guild.save_yt_video(guild.queue.current, name)
+        guild.save_audio(guild.queue.current, name)
         await ctx.send(guild.lang['result.video_saved'].format(name))
 
 
@@ -447,12 +463,12 @@ async def saves(ctx: Context):
     """Show saved videos"""
 
     guild = GuildData.get_instance(ctx.guild.id)
-    _saves = guild.get_yt_saves()
+    saves = guild.get_saved_audio()
 
     # Send message
     await ctx.send(guild.lang['result.saved_videos'].format(
         '\n'.join(
-            f'**{name}**: {video.title}' for name, video in _saves.items()
+            f'**{save.name}**: {save.source.title}' for save in saves
         ) or guild.lang['text.empty']
     ))
 
@@ -465,7 +481,7 @@ async def clearsaves(ctx: Context):
     guild = GuildData.get_instance(ctx.guild.id)
     saves_len = len(guild.get_yt_saves())
 
-    guild.clear_yt_saves()
+    guild.clear_saves()
 
     # Send message
     await ctx.send(guild.lang['result.saved_videos_cleared'].format(saves_len))
@@ -481,13 +497,13 @@ async def delsave(
     """Delete saved video"""
 
     guild = GuildData.get_instance(ctx.guild.id)
-    _saves = guild.get_yt_saves()
+    save = guild.get_saved_audio_by_name(name)
 
     # Error, if video not found
-    if name not in _saves:
+    if save is None:
         return await ctx.send(guild.lang['error.video_not_found'])
 
-    guild.delete_saved_yt_video(name)
+    guild.delete_saved_audio(name)
 
     # Send message
     await ctx.send(guild.lang['result.video_deleted'].format(name))
@@ -506,19 +522,18 @@ async def playsaved(
             return
 
     guild = GuildData.get_instance(ctx.guild.id)
-    _saves = guild.get_yt_saves()
+    save = guild.get_saved_audio_by_name(name)
 
     # Error, if video not found
-    if name not in _saves:
+    if save is None:
         return await ctx.send(guild.lang['error.video_not_found'])
 
     # Start playing
-    video = _saves[name]
     controller = AudioController.get_controller(ctx.voice_client)
-    controller.play_audio(video)
+    controller.play_audio(save.source)
 
     # Send message
-    await ctx.send(guild.lang['result.video_playing'].format(video.title))
+    await ctx.send(guild.lang['result.video_playing'].format(save.source.title))
 
 
 @bot.command('replaysaved', aliases=['replaysave', 'rs'])
@@ -534,17 +549,16 @@ async def replaysaved(
             return
 
     guild = GuildData.get_instance(ctx.guild.id)
-    _saves = guild.get_yt_saves()
+    save = guild.get_saved_audio_by_name(name)
 
     # Error, if video not found
-    if name not in _saves:
+    if save is None:
         return await ctx.send(guild.lang['error.video_not_found'])
 
     # Start auto replay
-    video = _saves[name]
     controller = AudioController.get_controller(ctx.voice_client)
     controller.queue.on_replay = True
-    controller.play_audio(video)
+    controller.play_audio(save.source)
 
     # Send message
-    await ctx.send(guild.lang['result.video_playing'].format(video.title))
+    await ctx.send(guild.lang['result.video_playing'].format(save.source.title))

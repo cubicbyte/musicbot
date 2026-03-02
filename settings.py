@@ -5,6 +5,7 @@ Module with all settings and global variables
 import os
 import sys
 import logging
+import shutil
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -17,9 +18,19 @@ load_dotenv('.env')  # From .env file in current directory
 
 LANGS_DIR = os.path.join(sys.path[0], 'langs')
 
+if shutil.which('ffmpeg') is not None:
+    FFMPEG_BINARY = 'ffmpeg'
+elif shutil.which('static_ffmpeg') is not None:
+    FFMPEG_BINARY = 'static_ffmpeg'
+else:
+    raise EnvironmentError(
+        'FFmpeg not found. Please install FFmpeg and make sure it is in your system PATH.'
+        'Alternatively, you can use static-ffmpeg package to include FFmpeg binary with the bot.'
+    )
+
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-    'executable': 'static_ffmpeg',
+    'executable': FFMPEG_BINARY,
     'options': '-bufsize 16M',
 }
 
@@ -34,6 +45,7 @@ os.environ.setdefault('DEFAULT_LANG', 'ru')
 os.environ.setdefault('SAVES_LIMIT', '16')
 os.environ.setdefault('LOG_FILEPATH', 'debug.log')
 os.environ.setdefault('LOG_LEVEL', 'INFO')
+os.environ.setdefault('ENABLE_SPONSORBLOCK', 'true')
 os.environ.setdefault('LOG_FORMAT', logging.BASIC_FORMAT)
 
 # Check environment variables

@@ -4,6 +4,7 @@ Module with all data schemas used in bot
 
 from asyncio import sleep
 from dataclasses import dataclass
+from typing import Self
 
 
 class Language(dict):
@@ -80,13 +81,24 @@ class SpamState:
 class AudioSource:
     """Base class for audio sources."""
 
+    title: str
+    "Audio title"
     source_url: str
     "Direct link to audio file, playble by `discord.FFmpegPCMAudio`"
+
+    def serialize(self) -> dict[str, any]:
+        """Serialize audio source to dictionary"""
+        return self.__dict__
+
+    @classmethod
+    def deserialize(cls, data: dict[str, any]) -> Self:
+        """Deserialize audio source from dictionary"""
+        return cls(**data)
 
 
 @dataclass
 class YoutubeVideo(AudioSource):
-    """Class for storing information about youtube video."""
+    """Class for storing information about YouTube video."""
 
     origin_query: str
     "Original search query"
@@ -106,10 +118,10 @@ class YoutubeVideo(AudioSource):
     "Link to video thumbnail"
 
     @staticmethod
-    def extract_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
+    def from_ydl(vid_info: dict[str, any]) -> 'YoutubeVideo':
         """Extract video information from `YoutubeDL.extract_info` dictionary"""
 
-        return dict(
+        return YoutubeVideo(
             source_url=vid_info.get('url'),
             origin_query=vid_info.get('original_url'),
             id=vid_info.get('id'),
