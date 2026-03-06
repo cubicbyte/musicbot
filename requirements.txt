@@ -1,5 +1,5 @@
 # Libraries
-discord.py==2.7.0
+discord.py==2.7.1
 yt-dlp==2026.2.21
 sponsorblock.py==0.2.3
 
@@ -8,6 +8,7 @@ python-dotenv==1.2.2
 flatdict==4.1.0
 PyYAML==6.0.3
 PyNaCl==1.6.2 # Needed for discord.py to work. Can cause pip installation to fail on some systems.
+davey~=0.1.4 # Needed for discord.py to work
 
 # Optional dependencies
 static-ffmpeg==2.5
